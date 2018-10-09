@@ -216,4 +216,10 @@ namespace University_System.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+
+    public enum Sex
+    {
+        Male,
+        Female
+    }
 }
