@@ -31,87 +31,6 @@ namespace University_System
             e.Handled = true;
         }
 
-        private void InfoGrid_OnTextInput(object sender, TextCompositionEventArgs e)
-        {
-            var grid = (DataGrid) sender;
-            var currentCell = grid.CurrentCell;
-            if (currentCell.Column.Header.ToString() == "PhoneNumber")
-            {
-                
-            }
-        }
-
-        private void InfoGrid_OnPreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.OriginalSource is TextBox textBox)
-            {
-                var columnHeader = ((DataGridCell) textBox.Parent).Column.Header.ToString();
-                if (columnHeader == "PhoneNumber")
-                {
-                    textBox.SelectionStart = textBox.Text.Length;
-
-                    textBox.MaxLength = 16;
-                    if (textBox.Text.Length == 3)
-                    {
-                        textBox.Text += "0";
-                        textBox.SelectionStart = textBox.Text.Length;
-                        return;
-                    }
-
-                    string number = textBox.Text, newNumber = "";
-                    if (number[number.Length - 1] == ' ')
-                    {
-                        number = number.Substring(0, number.Length - 1);
-                        textBox.Text = number;
-                    }
-                    if (_countOfCharactersInTextBox >= textBox.Text.Length)
-                    {
-                        _countOfCharactersInTextBox = textBox.Text.Length;
-                        if (number == "+38")
-                        {
-                            textBox.Text += "0";
-                        }
-                        return;
-                    }
-
-                    if (textBox.Text.Length == 7)
-                    {
-                        for (int i = 0; i < 6; i++)
-                        {
-                            newNumber += number[i];
-                        }
-                        newNumber += "-";
-                        newNumber += number[6];
-                        textBox.Text = newNumber;
-                    }
-                    else if (textBox.Text.Length == 11)
-                    {
-                        for (int i = 0; i < 10; i++)
-                        {
-                            newNumber += number[i];
-                        }
-                        newNumber += "-";
-                        newNumber += number[10];
-                        textBox.Text = newNumber;
-                    }
-                    else if (textBox.Text.Length == 14)
-                    {
-                        for (int i = 0; i < 13; i++)
-                        {
-                            newNumber += number[i];
-                        }
-                        newNumber += "-";
-                        newNumber += number[13];
-                        textBox.Text = newNumber;
-                    }
-
-                    textBox.SelectionStart = textBox.Text.Length;
-                    _countOfCharactersInTextBox = textBox.Text.Length;
-
-                }
-            }
-        }
-
         private DataGridRow GetRow(DataGrid grid, int index)
         {
             DataGridRow row = (DataGridRow)grid.ItemContainerGenerator.ContainerFromIndex(index);
@@ -178,6 +97,68 @@ namespace University_System
                         e.Handled = true;
                 }
             }
+        }
+
+        private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            TextBox txtBox = (TextBox)sender;
+            string number = txtBox.Text, newNumber = "";
+            if (number == "")
+                return;
+            if (number[number.Length - 1] == ' ')
+            {
+                number = number.Substring(0, number.Length - 1);
+                txtBox.Text = number;
+            }
+            if (_countOfCharactersInTextBox > txtBox.Text.Length)
+            {
+                _countOfCharactersInTextBox = txtBox.Text.Length;
+                if (number == "+38")
+                {
+                    txtBox.Text += "0";
+                }
+                return;
+            }
+
+            if (txtBox.Text.Length == 7)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    newNumber += number[i];
+                }
+                newNumber += "-";
+                newNumber += number[6];
+                txtBox.Text = newNumber;
+            }
+            else if (txtBox.Text.Length == 11)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    newNumber += number[i];
+                }
+                newNumber += "-";
+                newNumber += number[10];
+                txtBox.Text = newNumber;
+            }
+            else if (txtBox.Text.Length == 14)
+            {
+                for (int i = 0; i < 13; i++)
+                {
+                    newNumber += number[i];
+                }
+                newNumber += "-";
+                newNumber += number[13];
+                txtBox.Text = newNumber;
+            }
+
+            txtBox.SelectionStart = txtBox.Text.Length;
+            _countOfCharactersInTextBox = txtBox.Text.Length;
+        }
+
+        private void UIElement_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            ((TextBox)sender).SelectionLength = 0;
+            ((TextBox)sender).SelectionStart = ((TextBox)sender).Text.Length;
         }
     }
 }

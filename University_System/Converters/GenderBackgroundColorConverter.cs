@@ -20,11 +20,11 @@ namespace University_System.Converters
             if (values == null)
                 return new SolidColorBrush(Colors.Transparent);
 
-            if (values[1] is DataGridCell dataGridCell && values[0] is Student student && dataGridCell.Column.Header != null)
+            if (values[1] is DataGridCell dataGridCell && dataGridCell.Column.Header != null && values[0] != null)
             {
                 if (dataGridCell.Column.Header.ToString() == "Gender")
                 {
-                    switch (student.Gender)
+                    switch (values[0])
                     {
                         case "Male":
                             return new SolidColorBrush(Colors.Red);

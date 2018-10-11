@@ -56,7 +56,7 @@ namespace University_System.Models
             set
             {
                 _gender = value;
-                OnPropertyChanged();
+                OnPropertyChanged("Gender");
             }
         }
         private string _email;

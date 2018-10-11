@@ -230,7 +230,6 @@
             <Button Content="Save" 
                     FontSize="18"
                     Command="{Binding Path=SaveButtonClickAddNewStudentWindow}"
-                    IsEnabled="{Binding Source=Error, UpdateSourceTrigger=LostFocus, Converter={StaticResource BoolConverter}}"
                     MinWidth="240"
                     Margin="10"
                     DockPanel.Dock="Right">
