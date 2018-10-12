@@ -72,9 +72,7 @@ namespace University_System.ViewModel
             RemoveGroupButtonClick = new CommandWithParameter<object>(RemoveGroupButton);
             AddStudentToGroupButtonClick = new CommandWithParameter<object>(AddStudentToGroupButton);
             DuplicateStudentButtonClick = new CommandWithParameter<object>(DuplicateStudentButton);
-            //SelectedGroupChangedClick = new CommandWithParameter<object>(SelectedGroupChanged);
-            //NewStudent = new Student()
-            //{
+
             FirstName = "";
             LastName = "";
             Age = 0;
@@ -84,9 +82,8 @@ namespace University_System.ViewModel
             Address = "";
             BornDateTime = DateTime.Now;
             GroupId = 0;
-            //};
-            IsEditModeEnabled = false;
 
+            IsEditModeEnabled = false;
         }
 
 
@@ -205,7 +202,7 @@ namespace University_System.ViewModel
 
         private async void RemoveStudentButton(object parameter)
         {
-            var menuItem = (MenuItem)parameter;
+            var menuItem = (MenuItem) parameter;
 
             if (menuItem.Parent is ContextMenu contextMenu)
             {
@@ -213,15 +210,22 @@ namespace University_System.ViewModel
                 {
                     if (dataGrid.SelectedItem is Student selectedStudent)
                     {
-                        using (var db = new StudentContext())
+                        var result = MessageBox.Show("Are you sure that you would like to remove this student?",
+                            "Remove student!",
+                            MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        if (result == MessageBoxResult.Yes)
                         {
-                            var student = await db.Students.FindAsync(selectedStudent.Id);
-
-                            if (student != null)
+                            using (var db = new StudentContext())
                             {
-                                db.Students.Remove(student);
-                                await db.SaveChangesAsync();
-                                LoadButton();
+                                var student = await db.Students.FindAsync(selectedStudent.Id);
+
+                                if (student != null)
+                                {
+                                    db.Students.Remove(student);
+                                    await db.SaveChangesAsync();
+                                    SelectedGroupChanged();
+                                    LoadButton();
+                                }
                             }
                         }
                     }
@@ -239,16 +243,23 @@ namespace University_System.ViewModel
                 {
                     if (dataGrid.SelectedItem is AdministrativeInformation selectedAdministrativeInformation)
                     {
-                        using (var db = new StudentContext())
+                        var result = MessageBox.Show("Are you sure that you would like to remove this group?",
+                            "Remove group!",
+                            MessageBoxButton.YesNo, 
+                            MessageBoxImage.Question);
+                        if (result == MessageBoxResult.Yes)
                         {
-                            db.Groups.Load();
-                            var group = await db.Groups.FirstOrDefaultAsync(x => x.Id == selectedAdministrativeInformation.GroupId);
-                            if (group != null)
+                            using (var db = new StudentContext())
                             {
-                                db.Groups.Remove(group);
-                                await db.SaveChangesAsync();
-                                LoadButton();
-                                Students.Clear();
+                                db.Groups.Load();
+                                var group = await db.Groups.FirstOrDefaultAsync(x => x.Id == selectedAdministrativeInformation.GroupId);
+                                if (group != null)
+                                {
+                                    db.Groups.Remove(group);
+                                    await db.SaveChangesAsync();
+                                    LoadButton();
+                                    Students.Clear();
+                                }
                             }
                         }
                     }
@@ -389,10 +400,6 @@ namespace University_System.ViewModel
                             Error = "Wrong first name!"; 
 
                         }
-                        else
-                        {
-                            Error = "";
-                        }
                         break;
                     case "LastName":
                         if (!(Regex.IsMatch(LastName, "^[a-zA-Z]{1,20}$")))
@@ -400,44 +407,24 @@ namespace University_System.ViewModel
 
                             Error = "Wrong second name!";
                         }
-                        else
-                        {
-                            Error = "";
-                        }
-
                         break;
                     case "Age":
                         if ((Age < 14) || (Age > 100))
                         {
                             Error = "Wrong age!";
                         }
-                        else
-                        {
-                            Error = "";
-                        }
-
                         break;
                     case "Email":
                         if (!(Regex.IsMatch(Email, @"^[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$")))
                         {
                             Error = "Wrong email! Example: 'myemail@gmail.com'";
                         }
-                        else
-                        {
-                            Error = "";
-                        }
-
                         break;
                     case "PhoneNumber":
                         if (!(Regex.IsMatch(PhoneNumber, @"^\+380\d\d[-]\d\d\d[-]\d\d[-]\d\d$")))
                         {
                             Error = "Wrong phone number! Example: '+38011-111-11-11'";
                         }
-                        else
-                        {
-                            Error = "";
-                        }
-
                         break;
                     case "BornDateTime":
                         if (!(Regex.IsMatch(BornDateTime.ToShortDateString(), @"^\d\d(\.|\/|\-)\d\d(\.|\/|\-)\d\d\d\d$")))
@@ -448,18 +435,12 @@ namespace University_System.ViewModel
                         if (result >= 0)
                         {
                             Error = "Wrong date!";
-
-                        }                        else
-                        {
-                            Error = "";
                         }
-
                         break;
                     default:
                         Error = "";
                         break;
-                }
-                    
+                }                 
                 return Error;
             }
         }

@@ -301,6 +301,8 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Setter Property="ToolTip"
+                    Value="{Binding Path=DataContext}"></Setter>
             <Style.Triggers>
                 <Trigger Property="IsSelected" 
                          Value="True">
@@ -308,9 +310,9 @@
                         <Setter.Value>
                             <LinearGradientBrush EndPoint="0.5,1"
                                                  StartPoint="0.5,0">
-                                <GradientStop Color="GreenYellow"
+                                <GradientStop Color="#c7ff00"
                                               Offset="0" />
-                                <GradientStop Color="Gray"
+                                <GradientStop Color="#f7ff6b"
                                               Offset="1" />
                             </LinearGradientBrush>
                         </Setter.Value>
@@ -360,7 +362,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -369,7 +371,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -378,7 +380,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -387,7 +389,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -396,7 +398,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -405,7 +407,16 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="Chartreuse" Duration="0">
+                                                            To="#f48e00" Duration="0">
+                                            </ColorAnimation>
+                                        </Storyboard>
+                                    </VisualState>
+
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="DGR_Border"
+                                                            Storyboard.TargetProperty="(Panel.Background).Color"
+                                                            To="#ffdd00" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -764,6 +775,14 @@
             </DataGrid.RowValidationRules>
         </DataGrid>
 
+        <Popup AllowsTransparency="True"  
+               Placement="Mouse" 
+               IsOpen="{Binding Path=SelectedItem, ElementName=InfoGrid, Mode=TwoWay}">
+            <Border Background="DarkGray">
+                <TextBlock Text="Popup"/>
+            </Border>
+        </Popup>
+
         <GridSplitter HorizontalAlignment="Stretch"
                       ResizeDirection="Columns"
                       Width="3"
@@ -815,6 +834,7 @@
                               IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
+
         </DataGrid>
 
         <Grid Grid.Row="2"

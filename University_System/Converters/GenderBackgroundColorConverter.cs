@@ -29,7 +29,7 @@ namespace University_System.Converters
                         case "Male":
                             return new SolidColorBrush(Colors.Red);
                         case "Female":
-                            return new SolidColorBrush(Colors.Blue);
+                            return new SolidColorBrush(Colors.DeepSkyBlue);
                     }
                 }
             }

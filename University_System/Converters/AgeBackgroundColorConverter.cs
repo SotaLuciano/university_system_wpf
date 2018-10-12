@@ -22,7 +22,7 @@ namespace University_System.Converters
             if (value is Student student)
             {
                 if (student.Age < 16)
-                    return new SolidColorBrush(Colors.Red);
+                    return new SolidColorBrush(Colors.OrangeRed);
                 else
                 {
                     return new SolidColorBrush(Colors.Transparent);
