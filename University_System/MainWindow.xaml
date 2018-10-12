@@ -19,6 +19,7 @@
         <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converter:BoolToVisibilityConverter>
         <converter:InverseBooleanConverter x:Key="InverseBooleanConverter"></converter:InverseBooleanConverter>
         <converter:GenderToIntConverter x:Key="GenderToIntConverter"></converter:GenderToIntConverter>
+        <converter:SelectedItemToBoolConverter x:Key="SelectedItemToBoolConverter"></converter:SelectedItemToBoolConverter>
 
         <!--Control colors.-->
         <Color x:Key="ControlLightColor">White</Color>
@@ -377,7 +378,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="{StaticResource ControlMediumColor}" Duration="0">
+                                                            To="Chartreuse" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -386,7 +387,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="{StaticResource ControlMediumColor}" Duration="0">
+                                                            To="Chartreuse" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -395,7 +396,7 @@
                                         <Storyboard>
                                             <ColorAnimation Storyboard.TargetName="DGR_Border"
                                                             Storyboard.TargetProperty="(Panel.Background).Color"
-                                                            To="{StaticResource ControlMediumColor}" Duration="0">
+                                                            To="Chartreuse" Duration="0">
                                             </ColorAnimation>
                                         </Storyboard>
                                     </VisualState>
@@ -634,10 +635,11 @@
             <RowDefinition Height="Auto" ></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*" ></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.ColumnSpan="2"
+        <DockPanel Grid.ColumnSpan="3"
                    Grid.Row="0"
                    MaxHeight="20">
             <Menu DockPanel.Dock="Top">
@@ -651,15 +653,13 @@
                               Command="{Binding LoadButtonClick}" />
                     <MenuItem Header="Add" 
                               Command="{Binding AddButtonClick}"/>
-                    <MenuItem Header="Remove"/>
-                    <MenuItem Header="Find"/>
                 </MenuItem>
             </Menu>
             <StackPanel></StackPanel>
         </DockPanel>
 
         <DataGrid x:Name="InfoGrid"    
-                  Grid.ColumnSpan="2"
+                  Grid.Column="2"
                   Grid.Row="1"
                   AutoGenerateColumns="False" 
                   RowValidationErrorTemplate="{StaticResource GridError}"
@@ -668,12 +668,15 @@
                   ItemsSource="{Binding DataGridInformation}"
                   MinRowHeight="32"
                   PreviewTextInput="InfoGrid_OnPreviewTextInput"
-                  CanUserAddRows="False">
-
+                  CanUserAddRows="False"
+                  MinWidth="400">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Path=Id}"
                                     Header="Id">
                 </DataGridTextColumn>
+
+                <DataGridTextColumn Binding="{Binding Path=GroupId}"
+                                    Header="GroupId"></DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=FirstName}"
                                     Header="FirstName">
@@ -739,18 +742,83 @@
                                     Header="BornDateTime">
                 </DataGridTextColumn>
             </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Remove student"
+                              Command="{Binding RemoveStudentButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                    <MenuItem Header="Duplicate student"
+                              Command="{Binding DuplicateStudentButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.RowValidationRules>
                 <DataErrorValidationRule ValidationStep="UpdatedValue"/>
-                    <validation:ColumnValidation ValidationStep="UpdatedValue">
-                        <!--<validation:ColumnValidation.StudentList>
+                <validation:ColumnValidation ValidationStep="UpdatedValue">
+                    <!--<validation:ColumnValidation.StudentList>
                         <validation:StudentHelper Students="{StaticResource StudentModel}"></validation:StudentHelper>
                         </validation:ColumnValidation.StudentList>-->
-                    </validation:ColumnValidation>
-
+                </validation:ColumnValidation>
             </DataGrid.RowValidationRules>
         </DataGrid>
+
+        <GridSplitter HorizontalAlignment="Stretch"
+                      ResizeDirection="Columns"
+                      Width="3"
+                      Grid.Column="1"
+                      Grid.Row="1"
+                      ResizeBehavior="PreviousAndNext" />
+
+        <DataGrid Grid.Row="1"
+                  Grid.Column="0"
+                  AutoGenerateColumns="False"
+                  RowValidationErrorTemplate="{StaticResource GridError}"
+                  ItemsSource="{Binding AdministrativeInformations}"
+                  ColumnWidth="*"
+                  MinRowHeight="32"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  SelectedItem="{Binding SelectedRowAdministrativeInformation}"
+                  MinWidth="400">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Path=GroupId}"
+                                    Header="GroupId">
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Binding="{Binding Path=GroupName}"
+                                    Header="GroupName">
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Binding="{Binding Path=SpecializationName}"
+                                    Header="SpecializationName">
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Binding="{Binding Path=DepartmentName}"
+                                    Header="DepartmentName">
+                </DataGridTextColumn>
+
+                <DataGridTextColumn Binding="{Binding Path=InstituteName}"
+                                    Header="InstituteName">
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Remove group"
+                              Command="{Binding RemoveGroupButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                    <MenuItem Header="Add student to group"
+                              Command="{Binding AddStudentToGroupButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+
         <Grid Grid.Row="2"
-              Grid.ColumnSpan="2">
+              Grid.ColumnSpan="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" ></RowDefinition>
             </Grid.RowDefinitions>

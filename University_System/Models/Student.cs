@@ -106,6 +106,20 @@ namespace University_System.Models
             }
         }
 
+        private int _groupId;
+
+        public int GroupId
+        {
+            get => _groupId;
+            set
+            {
+                _groupId = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public  virtual Group Group { get; set; }
+
         //public string this[string columnName]
         //{
         //    get

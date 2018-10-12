@@ -8,7 +8,7 @@
         xmlns:converter="clr-namespace:University_System.Converters"
 
         mc:Ignorable="d"
-        Title="AddNewStudentWindow" Height="558" Width="555" x:Name="NewStudentWindow"
+        Title="AddNewStudentWindow" Height="646.5" Width="555" x:Name="NewStudentWindow"
         MinHeight="558" MinWidth="555">
     <Window.Resources>
         <converter:StringErrorToBoolConverter x:Key="BoolConverter"></converter:StringErrorToBoolConverter>
@@ -49,6 +49,7 @@
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition></RowDefinition>
@@ -217,7 +218,24 @@
             </DatePicker.SelectedDate>
         </DatePicker>
 
-        <DockPanel Grid.Row="9"
+        <Label Grid.Row="9"
+               Grid.Column="0">
+            GroupId:
+        </Label>
+        <TextBox Grid.Row="9"
+                 Grid.Column="1"
+                 PreviewTextInput="UIElement_OnPreviewTextInput">
+            <TextBox.Text>
+                <Binding Path="GroupId"
+                         UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <DataErrorValidationRule />
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+
+        <DockPanel Grid.Row="10"
                    Grid.ColumnSpan="2"
                    LastChildFill="False">
             <Button Content="Cancel"

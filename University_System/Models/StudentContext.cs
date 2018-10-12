@@ -11,9 +11,14 @@ namespace University_System.Models
     {
         public StudentContext() : base()
         {
-            Database.SetInitializer<StudentContext>(new DropCreateDatabaseIfModelChanges<StudentContext>());
+            //Database.SetInitializer<StudentContext>(new DropCreateDatabaseIfModelChanges<StudentContext>());
         }
 
-        public DbSet<Student> Students { get; set; }  
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<Specialization> Specializations { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Institute> Institutes { get; set; }
+
     }
 }

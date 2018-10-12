@@ -15,6 +15,7 @@ using System.Windows.Input;
 using University_System.Commands;
 using University_System.Comparators;
 using University_System.Models;
+using Group = System.Text.RegularExpressions.Group;
 
 namespace University_System.ViewModel
 {
@@ -42,15 +43,36 @@ namespace University_System.ViewModel
             }
         }
         public ObservableCollection<Student> Students { get; set; }
+        public  ObservableCollection<AdministrativeInformation> AdministrativeInformations { get; set; }
+
+        private AdministrativeInformation _selectedRowAdministrativeInformation;
+
+        public AdministrativeInformation SelectedRowAdministrativeInformation
+        {
+            get => _selectedRowAdministrativeInformation;
+            set
+            {
+                _selectedRowAdministrativeInformation = value;
+                OnPropertyChanged();
+                SelectedGroupChanged();
+            }
+        }
 
         public StudentViewModel()
         {
             Students = new ObservableCollection<Student>();
+            AdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
+
             AddButtonClick = new MyCommand(AddButton);
             LoadButtonClick = new MyCommand(LoadButton);
             EditButtonClick = new MyCommand(EditButton);
             CancelButtonClick = new MyCommand(CancelButton);
             SaveButtonClick = new MyCommand(SaveButton);
+            RemoveStudentButtonClick = new CommandWithParameter<object>(RemoveStudentButton);
+            RemoveGroupButtonClick = new CommandWithParameter<object>(RemoveGroupButton);
+            AddStudentToGroupButtonClick = new CommandWithParameter<object>(AddStudentToGroupButton);
+            DuplicateStudentButtonClick = new CommandWithParameter<object>(DuplicateStudentButton);
+            //SelectedGroupChangedClick = new CommandWithParameter<object>(SelectedGroupChanged);
             //NewStudent = new Student()
             //{
             FirstName = "";
@@ -61,6 +83,7 @@ namespace University_System.ViewModel
             PhoneNumber = "+380";
             Address = "";
             BornDateTime = DateTime.Now;
+            GroupId = 0;
             //};
             IsEditModeEnabled = false;
 
@@ -87,14 +110,20 @@ namespace University_System.ViewModel
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public DateTime BornDateTime { get; set; }
+        public int GroupId { get; set; }
 
         public ICommand AddButtonClick { get; }
         public ICommand LoadButtonClick { get; }
+        public ICommand RemoveStudentButtonClick { get; }
         public ICommand SaveButtonClickAddNewStudentWindow { get; set; }
         public ICommand EditButtonClick { get; set; }
         public ICommand CancelButtonClick { get; set; }
         public ICommand SaveButtonClick { get; set; }
+        public ICommand RemoveGroupButtonClick { get; }
+        public ICommand AddStudentToGroupButtonClick { get; }
+        public ICommand DuplicateStudentButtonClick { get; }
 
+        
         private void AddButton()
         {
             var window = new AddNewStudentWindow(this);
@@ -109,11 +138,19 @@ namespace University_System.ViewModel
                     LastName = LastName,
                     Gender = Gender,
                     PhoneNumber = PhoneNumber,
-                    BornDateTime = BornDateTime
+                    BornDateTime = BornDateTime,
+                    GroupId = GroupId
                 };
 
                 using (var db = new StudentContext())
                 {
+                    db.Groups.Load();
+                    var group = db.Groups.FirstOrDefault(x => x.Id == newStudent.GroupId);
+                    if (group == null)
+                    {
+                        MessageBox.Show("Wrong GroupId!", "Error!");
+                        return;
+                    }
                     try
                     {
                         db.Students.Add(newStudent);
@@ -130,20 +167,171 @@ namespace University_System.ViewModel
 
         private void LoadButton()
         {
-            Students.Clear();
+            AdministrativeInformations.Clear();
             DataGridInformation = Students;
 
             using (var db = new StudentContext())
             {
+                var admInfo = from g in db.Groups
+                    join s in db.Specializations on g.SpecializationId equals s.Id
+                    join d in db.Departments on s.DepartmentId equals d.Id
+                    join i in db.Institutes on d.InstituteId equals i.Id
+                    select new
+                    {
+                        GroupId = g.Id,
+                        GroupName = g.Name,
+                        SpecializationName = s.Name,
+                        DepartmentName = d.Name,
+                        InstituteName = i.Name
+                    };
+
                 db.Students.Load();
                 var studs = db.Students.ToList();
 
-                foreach (var stud in studs)
+                foreach (var info in admInfo)
                 {
-                    Students.Add(stud);
+                    AdministrativeInformations.Add(new AdministrativeInformation()
+                    {
+                        GroupId = info.GroupId,
+                        GroupName = info.GroupName,
+                        SpecializationName = info.SpecializationName,
+                        DepartmentName = info.DepartmentName,
+                        InstituteName = info.InstituteName
+                    });
                 }
             }
 
+        }
+
+        private async void RemoveStudentButton(object parameter)
+        {
+            var menuItem = (MenuItem)parameter;
+
+            if (menuItem.Parent is ContextMenu contextMenu)
+            {
+                if (contextMenu.PlacementTarget is DataGrid dataGrid)
+                {
+                    if (dataGrid.SelectedItem is Student selectedStudent)
+                    {
+                        using (var db = new StudentContext())
+                        {
+                            var student = await db.Students.FindAsync(selectedStudent.Id);
+
+                            if (student != null)
+                            {
+                                db.Students.Remove(student);
+                                await db.SaveChangesAsync();
+                                LoadButton();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private async void RemoveGroupButton(object parameter)
+        {
+            var menuItem = (MenuItem)parameter;
+
+            if (menuItem.Parent is ContextMenu contextMenu)
+            {
+                if (contextMenu.PlacementTarget is DataGrid dataGrid)
+                {
+                    if (dataGrid.SelectedItem is AdministrativeInformation selectedAdministrativeInformation)
+                    {
+                        using (var db = new StudentContext())
+                        {
+                            db.Groups.Load();
+                            var group = await db.Groups.FirstOrDefaultAsync(x => x.Id == selectedAdministrativeInformation.GroupId);
+                            if (group != null)
+                            {
+                                db.Groups.Remove(group);
+                                await db.SaveChangesAsync();
+                                LoadButton();
+                                Students.Clear();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void AddStudentToGroupButton(object parameter)
+        {
+            var menuItem = (MenuItem)parameter;
+
+            if (menuItem.Parent is ContextMenu contextMenu)
+            {
+                if (contextMenu.PlacementTarget is DataGrid dataGrid)
+                {
+                    if (dataGrid.SelectedItem is AdministrativeInformation selectedAdministrativeInformation)
+                    {
+                        FirstName = "";
+                        LastName = "";
+                        Age = 0;
+                        Gender = "";
+                        Email = "";
+                        PhoneNumber = "+380";
+                        Address = "";
+                        BornDateTime = DateTime.Now;
+                        GroupId = selectedAdministrativeInformation.GroupId;
+                        AddButton();
+                        SelectedGroupChanged();
+                    }
+                }
+            }
+        }
+
+        private void DuplicateStudentButton(object parameter)
+        {
+            var menuItem = (MenuItem)parameter;
+
+            if (menuItem.Parent is ContextMenu contextMenu)
+            {
+                if (contextMenu.PlacementTarget is DataGrid dataGrid)
+                {
+                    if (dataGrid.SelectedItem is Student selectedStudent)
+                    {
+                        using (var db = new StudentContext())
+                        {
+                            var student = new Student()
+                            {
+                                FirstName = selectedStudent.FirstName,
+                                LastName = selectedStudent.LastName,
+                                Age = selectedStudent.Age,
+                                Gender = selectedStudent.Gender,
+                                Address = selectedStudent.Address,
+                                Email = selectedStudent.Email,
+                                PhoneNumber = selectedStudent.PhoneNumber,
+                                BornDateTime = selectedStudent.BornDateTime,
+                                GroupId = selectedStudent.GroupId
+                            };
+
+                            db.Students.Add(student);
+                            db.SaveChanges();
+                            SelectedGroupChanged();
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SelectedGroupChanged()
+        {
+            if(SelectedRowAdministrativeInformation == null)
+                return;
+            using (var db = new StudentContext())
+            {
+                Students.Clear();
+                db.Students.Load();
+                var students = db.Students.Where(x => x.GroupId == SelectedRowAdministrativeInformation.GroupId);
+
+                foreach (var student in students)
+                {
+                    Students.Add(student);
+                }
+
+            }
         }
 
         private void SaveButton()

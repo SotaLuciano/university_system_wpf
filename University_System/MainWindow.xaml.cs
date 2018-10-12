@@ -160,5 +160,10 @@ namespace University_System
             ((TextBox)sender).SelectionLength = 0;
             ((TextBox)sender).SelectionStart = ((TextBox)sender).Text.Length;
         }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+           
+        }
     }
 }
