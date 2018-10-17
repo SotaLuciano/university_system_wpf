@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using University_System.Commands;
 using University_System.Comparators;
@@ -23,7 +24,6 @@ namespace University_System.ViewModel
     {
         private IEnumerable _dataGridInformation;
         private bool _isEditModeEnabled;
-
         public bool IsEditModeEnabled
         {
             get => _isEditModeEnabled;
@@ -55,6 +55,42 @@ namespace University_System.ViewModel
                 _selectedRowAdministrativeInformation = value;
                 OnPropertyChanged();
                 SelectedGroupChanged();
+            }
+        }
+
+        private bool _isPopupOpen;
+
+        public bool IsPopupOpen
+        {
+            get => _isPopupOpen;
+            set
+            {
+                _isPopupOpen = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _popupText;
+
+        public string PopupText
+        {
+            get => _popupText;
+            set
+            {
+                _popupText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private PlacementMode _popupPlacementMode;
+
+        public PlacementMode PopupPlacementMode
+        {
+            get => _popupPlacementMode;
+            set
+            {
+                _popupPlacementMode = value;
+                OnPropertyChanged();
             }
         }
 
@@ -177,8 +213,11 @@ namespace University_System.ViewModel
                     {
                         GroupId = g.Id,
                         GroupName = g.Name,
+                        SpecializationId = s.Id,
                         SpecializationName = s.Name,
+                        DepartmentId = d.Id,
                         DepartmentName = d.Name,
+                        InstituteId = i.Id,
                         InstituteName = i.Name
                     };
 
@@ -191,8 +230,11 @@ namespace University_System.ViewModel
                     {
                         GroupId = info.GroupId,
                         GroupName = info.GroupName,
+                        SpecializationId = info.SpecializationId,
                         SpecializationName = info.SpecializationName,
+                        DepartmentId = info.DepartmentId,
                         DepartmentName = info.DepartmentName,
+                        InstituteId = info.InstituteId,
                         InstituteName = info.InstituteName
                     });
                 }
@@ -352,24 +394,36 @@ namespace University_System.ViewModel
                 db.Students.Load();
                 var studs = db.Students.ToList();
 
-                foreach (var stud in studs)
+                foreach (var curStud in Students)
                 {
-                    var curStud = Students.FirstOrDefault((x) => x.Id == stud.Id);
-                    if(curStud == null)
+                    var student = db.Students.FirstOrDefault(x => x.Id == curStud.Id);
+                    if (student == null)
                         continue;
 
-                    if (!StudentComparator.CompareStudents(stud, curStud))
+                    if (!StudentComparator.CompareStudents(student, curStud))
                     {
-                        stud.FirstName = curStud.FirstName;
-                        stud.LastName = curStud.LastName;
-                        stud.Age = curStud.Age;
-                        stud.Gender = curStud.Gender;
-                        stud.Address = curStud.Address;
-                        stud.Email = curStud.Email;
-                        stud.BornDateTime = curStud.BornDateTime;
+                        student.FirstName = curStud.FirstName;
+                        student.LastName = curStud.LastName;
+                        student.Age = curStud.Age;
+                        student.Gender = curStud.Gender;
+                        student.Address = curStud.Address;
+                        student.Email = curStud.Email;
+                        student.BornDateTime = curStud.BornDateTime;
+                        student.GroupId = curStud.GroupId;
                         db.SaveChanges();
                     }
+                }
 
+                db.Groups.Load();
+
+                foreach (var admInfo in AdministrativeInformations)
+                {
+                    var group = db.Groups.FirstOrDefault(x => x.Id == admInfo.GroupId);
+                    if (group != null && group.Name != admInfo.GroupName)
+                    {
+                        group.Name = admInfo.GroupName;
+                        db.SaveChanges();
+                    }
                 }
             }
             IsEditModeEnabled = false;

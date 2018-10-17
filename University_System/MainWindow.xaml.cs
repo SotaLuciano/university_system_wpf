@@ -18,12 +18,16 @@ namespace University_System
     public partial class MainWindow : Window
     {
         private int _countOfCharactersInTextBox;
-
+        private Popup PopupInfo { get; set; }
+        private int count = 0;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new StudentViewModel();
             _countOfCharactersInTextBox = 0;
+            PopupInfo = new Popup();
+            PopupInfo.StaysOpen = true;
+
         }
 
         private void DG_ScrollViewer_OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
@@ -161,9 +165,62 @@ namespace University_System
             ((TextBox)sender).SelectionStart = ((TextBox)sender).Text.Length;
         }
 
-        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void EventSetterMouseDoubleClick_OnHandler(object sender, MouseEventArgs e)
         {
-           
+            if (!(StudentGrid.IsReadOnly || InfoGrid.IsReadOnly))
+            {
+                return;
+            }
+            if (sender is DataGridRow dataGridRow)
+            {
+                if (dataGridRow.DataContext is AdministrativeInformation admInfo)
+                {
+                    string info = "";
+                    info += "GroupID =" + admInfo.GroupId + "\n";
+                    info += "GroupName = " + admInfo.GroupName + "\n";
+                    info += "SpecializationName = " + admInfo.SpecializationName + "\n";
+                    info += "DepartmentName = " + admInfo.DepartmentName + "\n";
+                    info += "InstituteName =" + admInfo.InstituteName;
+
+                    if (DataContext is StudentViewModel studentViewModel)
+                    {
+                        studentViewModel.IsPopupOpen = true;
+                        studentViewModel.PopupPlacementMode = PlacementMode.MousePoint;
+                        studentViewModel.PopupText = info;
+                    }
+                }
+                else if (dataGridRow.DataContext is Student student)
+                {
+                    string info = "";
+                    info += "ID =" + student.Id + "\n";
+                    info += "GroupID = " + student.GroupId + "\n";
+                    info += "FirstName = " + student.FirstName + "\n";
+                    info += "LastName = " + student.LastName + "\n";
+                    info += "Age = " + student.Age + "\n";
+                    info += "Gender = " + student.Gender + "\n";
+                    info += "Email = " + student.Email + "\n";
+                    info += "PhoneNumber = " + student.PhoneNumber + "\n";
+                    info += "Address = " + student.Address + "\n";
+                    info += "BornDateTime = " + student.BornDateTime;
+
+                    if (DataContext is StudentViewModel studentViewModel)
+                    {
+                        studentViewModel.IsPopupOpen = true;
+                        studentViewModel.PopupPlacementMode = PlacementMode.MousePoint;
+                        studentViewModel.PopupText = info;
+                    }
+                }
+            }
+        }
+
+        private void EventSetter_OnHandler(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is StudentViewModel studentViewModel)
+            {
+                studentViewModel.IsPopupOpen = false;
+            }
+            if (PopupInfo != null)
+                PopupInfo.IsOpen = false;
         }
     }
 }

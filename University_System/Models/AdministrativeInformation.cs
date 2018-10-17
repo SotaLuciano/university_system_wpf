@@ -32,6 +32,17 @@ namespace University_System.Models
             }
         }
 
+        private int _specializationId;
+        public int SpecializationId
+        {
+            get => _specializationId;
+            set
+            {
+                _specializationId = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string _specializationName;
         public string SpecializationName
         {
@@ -43,6 +54,17 @@ namespace University_System.Models
             }
         }
 
+        private int _departmentId;
+        public int DepartmentId
+        {
+            get => _departmentId;
+            set
+            {
+                _departmentId = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string _departmentName;
         public string DepartmentName
         {
@@ -50,6 +72,17 @@ namespace University_System.Models
             set
             {
                 _departmentName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _instituteId;
+        public int InstituteId
+        {
+            get => _instituteId;
+            set
+            {
+                _instituteId = value;
                 OnPropertyChanged();
             }
         }

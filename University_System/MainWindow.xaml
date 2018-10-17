@@ -20,7 +20,7 @@
         <converter:InverseBooleanConverter x:Key="InverseBooleanConverter"></converter:InverseBooleanConverter>
         <converter:GenderToIntConverter x:Key="GenderToIntConverter"></converter:GenderToIntConverter>
         <converter:SelectedItemToBoolConverter x:Key="SelectedItemToBoolConverter"></converter:SelectedItemToBoolConverter>
-
+        <converter:DataContextToTextConverter x:Key="DataContextToTextConverter"></converter:DataContextToTextConverter>
         <!--Control colors.-->
         <Color x:Key="ControlLightColor">White</Color>
         <Color x:Key="ControlMediumColor">#ffffff</Color>
@@ -247,6 +247,7 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <EventSetter Event="PreviewMouseDown" Handler="EventSetter_OnHandler"></EventSetter>
             <Style.Triggers>
                 <Trigger Property="IsGrouping"
              Value="true">
@@ -454,6 +455,7 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <EventSetter Event="MouseDoubleClick" Handler="EventSetterMouseDoubleClick_OnHandler"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" 
                          Value="True">
@@ -683,7 +685,8 @@
                   MinWidth="400">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Path=Id}"
-                                    Header="Id">
+                                    Header="Id"
+                                    IsReadOnly="True">
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=GroupId}"
@@ -752,6 +755,7 @@
                 <DataGridTextColumn Binding="{Binding Path=BornDateTime}"
                                     Header="BornDateTime">
                 </DataGridTextColumn>
+
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
@@ -775,6 +779,21 @@
             </DataGrid.RowValidationRules>
         </DataGrid>
 
+        <Popup Height="Auto" 
+               Width="Auto"
+               Name="MyPopup"
+               StaysOpen="True"
+               AllowsTransparency="True"
+               IsOpen="{Binding Path=IsPopupOpen}"
+               Placement="{Binding Path=PopupPlacementMode}">
+            <Border BorderThickness="2"
+                    BorderBrush="Black"
+                    Background="OrangeRed">
+                <TextBlock Text="{Binding Path=PopupText}"
+                           Margin="3"/>
+            </Border>
+        </Popup>
+
         <Popup AllowsTransparency="True"  
                Placement="Mouse" 
                IsOpen="{Binding Path=SelectedItem, ElementName=InfoGrid, Mode=TwoWay}">
@@ -790,7 +809,8 @@
                       Grid.Row="1"
                       ResizeBehavior="PreviousAndNext" />
 
-        <DataGrid Grid.Row="1"
+        <DataGrid x:Name="StudentGrid"
+                  Grid.Row="1"
                   Grid.Column="0"
                   AutoGenerateColumns="False"
                   RowValidationErrorTemplate="{StaticResource GridError}"
@@ -798,28 +818,33 @@
                   ColumnWidth="*"
                   MinRowHeight="32"
                   CanUserAddRows="False"
-                  IsReadOnly="True"
                   SelectedItem="{Binding SelectedRowAdministrativeInformation}"
-                  MinWidth="400">
+                  MinWidth="400"
+                  IsReadOnly="{Binding Path=IsEditModeEnabled, Converter={StaticResource InverseBooleanConverter}}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Path=GroupId}"
-                                    Header="GroupId">
+                                    Header="GroupId"
+                                    IsReadOnly="True">
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=GroupName}"
-                                    Header="GroupName">
+                                    Header="GroupName"
+                                    IsReadOnly="{Binding Path=IsEditModeEnabled, Converter={StaticResource InverseBooleanConverter}}">
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=SpecializationName}"
-                                    Header="SpecializationName">
+                                    Header="SpecializationName"
+                                    IsReadOnly="True">
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=DepartmentName}"
-                                    Header="DepartmentName">
+                                    Header="DepartmentName"
+                                    IsReadOnly="True">
                 </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=InstituteName}"
-                                    Header="InstituteName">
+                                    Header="InstituteName"
+                                    IsReadOnly="True">
                 </DataGridTextColumn>
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
