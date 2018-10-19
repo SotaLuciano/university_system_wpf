@@ -644,6 +644,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" ></RowDefinition>
+            <RowDefinition Height="Auto" ></RowDefinition>
             <RowDefinition Height="*" ></RowDefinition>
             <RowDefinition Height="Auto" ></RowDefinition>
         </Grid.RowDefinitions>
@@ -671,9 +672,123 @@
             <StackPanel></StackPanel>
         </DockPanel>
 
+        <Grid Grid.ColumnSpan="3"
+              Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" ></RowDefinition>
+                <RowDefinition Height="Auto" ></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Row="0"
+                       Grid.Column="0"
+                       Margin="10,5,20,5">
+                <Label Content="Select groups: "></Label>
+                <ComboBox ItemsSource="{Binding AllAdministrativeInformations}"
+                          HorizontalContentAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="2" 
+                                       Text="{Binding Path=GroupName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Grid x:Name="gd" 
+                                              TextElement.Foreground="Black">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox x:Name="checkBox" 
+                                                      Margin="5" 
+                                                      Grid.Column="0"
+                                                      Checked="CheckBox_OnChecked"
+                                                      Unchecked="CheckBox_OnUnchecked"></CheckBox>
+                                            <TextBlock Margin="5"
+                                                       Grid.Column="1" 
+                                                       Text="{Binding Path=GroupName}"/>
+                                            <TextBlock Margin="5" 
+                                                       Grid.Column="2" 
+                                                       Text="{Binding Path=SpecializationName}"/>
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="ComboBoxItem.IsSelected" 
+                                                     Value="True">
+                                                <Setter TargetName="checkBox" 
+                                                        Property="IsChecked" 
+                                                        Value="True"></Setter>
+                                                <Setter TargetName="gd"  
+                                                        Property="Background" 
+                                                        Value="Gray"></Setter>
+                                                <Setter TargetName="gd"  
+                                                        Property="TextElement.Foreground" 
+                                                        Value="White"></Setter>
+                                            </Trigger>
+                                            <Trigger Property="ComboBoxItem.IsMouseOver" 
+                                                     Value="True">
+                                                <Setter TargetName="gd"  
+                                                        Property="Background" 
+                                                        Value="Blue"></Setter>
+                                                <Setter TargetName="gd"  
+                                                        Property="TextElement.Foreground" 
+                                                        Value="White"></Setter>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+            </DockPanel>
+
+            <DockPanel Grid.Row="0"
+                       Grid.Column="1"
+                       Margin="0,5,20,5">
+                <Label Content="LastName: "></Label>
+                <TextBox Text="{Binding Path=LastNameFilter}"
+                         TextChanged="TextBoxBaseFilter_OnTextChanged"></TextBox>
+            </DockPanel>
+
+            <DockPanel Grid.Row="1"
+                       Grid.Column="0"
+                       Margin="10,5,20,5">
+                <Label Content="From: "></Label>
+                <DatePicker SelectedDate="{Binding Path=FromDateFilter, Mode=TwoWay}"
+                            IsEnabled="{Binding IsDatePickerEnable}"
+                            SelectedDateChanged="DatePickerFrom_OnSelectedDateChanged"></DatePicker>
+                <Label Content="To: "></Label>
+                <DatePicker SelectedDate="{Binding Path=ToDateFilter, Mode=TwoWay}"
+                            IsEnabled="{Binding IsDatePickerEnable}"
+                            SelectedDateChanged="DatePickerTo_OnSelectedDateChanged"></DatePicker>
+                <Button Content="{Binding Path=IsDatePickerEnableText, Mode=TwoWay}"
+                        Margin="10,0,0,0"
+                        Click="ButtonBase_OnClick"></Button>
+            </DockPanel>
+
+            <DockPanel Grid.Row="1"
+                       Grid.Column="1"
+                       Margin="0,5,20,5">
+                <Label Content="Gender: "></Label>
+                <ComboBox SelectionChanged="Selector_OnSelectionChanged"
+                          SelectedIndex="{Binding Path=GenderFilter, Mode=TwoWay}">
+                    <ComboBoxItem Content="None"></ComboBoxItem>
+                    <ComboBoxItem Content="Male"></ComboBoxItem>
+                    <ComboBoxItem Content="Female"></ComboBoxItem>
+                </ComboBox>
+            </DockPanel>
+        </Grid>
+
         <DataGrid x:Name="InfoGrid"    
                   Grid.Column="2"
-                  Grid.Row="1"
+                  Grid.Row="2"
                   AutoGenerateColumns="False" 
                   RowValidationErrorTemplate="{StaticResource GridError}"
                   ColumnWidth="*"
@@ -681,13 +796,11 @@
                   ItemsSource="{Binding DataGridInformation}"
                   MinRowHeight="32"
                   PreviewTextInput="InfoGrid_OnPreviewTextInput"
-                  CanUserAddRows="False"
+                  CanUserAddRows="True"
+                  AddingNewItem="InfoGrid_OnAddingNewItem"
+                  InitializingNewItem="InfoGrid_OnInitializingNewItem"
                   MinWidth="400">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Path=Id}"
-                                    Header="Id"
-                                    IsReadOnly="True">
-                </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=GroupId}"
                                     Header="GroupId"></DataGridTextColumn>
@@ -759,6 +872,11 @@
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
+                    <MenuItem Header="Add student"
+                              Command="{Binding AddStudentToGroupButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+
                     <MenuItem Header="Remove student"
                               Command="{Binding RemoveStudentButtonClick}"
                               CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
@@ -794,27 +912,19 @@
             </Border>
         </Popup>
 
-        <Popup AllowsTransparency="True"  
-               Placement="Mouse" 
-               IsOpen="{Binding Path=SelectedItem, ElementName=InfoGrid, Mode=TwoWay}">
-            <Border Background="DarkGray">
-                <TextBlock Text="Popup"/>
-            </Border>
-        </Popup>
-
         <GridSplitter HorizontalAlignment="Stretch"
                       ResizeDirection="Columns"
                       Width="3"
                       Grid.Column="1"
-                      Grid.Row="1"
+                      Grid.Row="2"
                       ResizeBehavior="PreviousAndNext" />
 
         <DataGrid x:Name="StudentGrid"
-                  Grid.Row="1"
+                  Grid.Row="2"
                   Grid.Column="0"
                   AutoGenerateColumns="False"
                   RowValidationErrorTemplate="{StaticResource GridError}"
-                  ItemsSource="{Binding AdministrativeInformations}"
+                  ItemsSource="{Binding CurrentAdministrativeInformations}"
                   ColumnWidth="*"
                   MinRowHeight="32"
                   CanUserAddRows="False"
@@ -822,10 +932,6 @@
                   MinWidth="400"
                   IsReadOnly="{Binding Path=IsEditModeEnabled, Converter={StaticResource InverseBooleanConverter}}">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Path=GroupId}"
-                                    Header="GroupId"
-                                    IsReadOnly="True">
-                </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=GroupName}"
                                     Header="GroupName"
@@ -862,7 +968,7 @@
 
         </DataGrid>
 
-        <Grid Grid.Row="2"
+        <Grid Grid.Row="3"
               Grid.ColumnSpan="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" ></RowDefinition>

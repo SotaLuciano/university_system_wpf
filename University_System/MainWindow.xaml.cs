@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Data.Entity;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,16 +17,11 @@ namespace University_System
     public partial class MainWindow : Window
     {
         private int _countOfCharactersInTextBox;
-        private Popup PopupInfo { get; set; }
-        private int count = 0;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new StudentViewModel();
             _countOfCharactersInTextBox = 0;
-            PopupInfo = new Popup();
-            PopupInfo.StaysOpen = true;
-
         }
 
         private void DG_ScrollViewer_OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
@@ -40,7 +34,6 @@ namespace University_System
             DataGridRow row = (DataGridRow)grid.ItemContainerGenerator.ContainerFromIndex(index);
             if (row == null)
             {
-                // May be virtualized, bring into view and try again.
                 grid.UpdateLayout();
                 grid.ScrollIntoView(grid.Items[index]);
                 row = (DataGridRow)grid.ItemContainerGenerator.ContainerFromIndex(index);
@@ -219,8 +212,143 @@ namespace University_System
             {
                 studentViewModel.IsPopupOpen = false;
             }
-            if (PopupInfo != null)
-                PopupInfo.IsOpen = false;
+        }
+
+        private void TextBoxBaseFilter_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox && DataContext is StudentViewModel studentViewModel)
+            {
+               var result = UseFilter(textBox.Text, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
+                    studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
+
+                studentViewModel.DataGridInformation = result;
+            }
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is ComboBox comboBox && DataContext is StudentViewModel studentViewModel && comboBox.SelectedValue != null)
+            {
+                var result = UseFilter(studentViewModel.LastNameFilter, getGender(comboBox.SelectedIndex), false,
+                    studentViewModel.FromDateFilter, false, studentViewModel.ToDateFilter, studentViewModel.Students);
+                studentViewModel.DataGridInformation = result;
+            }
+        }
+        private void DatePickerFrom_OnSelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is DatePicker datePicker && DataContext is StudentViewModel studentViewModel)
+            {
+                var result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), true,
+                    datePicker.DisplayDate, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
+                studentViewModel.DataGridInformation = result;
+            }
+        }
+
+        private void DatePickerTo_OnSelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is DatePicker datePicker && DataContext is StudentViewModel studentViewModel)
+            {
+                var result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
+                    studentViewModel.FromDateFilter, true, datePicker.DisplayDate, studentViewModel.Students);
+                studentViewModel.DataGridInformation = result;
+            }
+        }
+
+        private IEnumerable<Student> UseFilter(string lastName, string gender, bool isFromDateSet, DateTime fromDate, bool isToDateSet, DateTime toDate, IEnumerable<Student> studentsList)
+        {
+            var lastNameFilterResult = studentsList.Where(x => x.LastName.ToLower().Contains(lastName.ToLower()));
+            var genderFilterResult = lastNameFilterResult;
+
+            if (gender != "None")
+            {
+                genderFilterResult = lastNameFilterResult.Where(x => x.Gender == gender);
+            }
+
+            var fromDateFilterResult = genderFilterResult;
+
+            if (isFromDateSet)
+            {
+                fromDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, fromDate) > 0);
+            }
+
+            var toDateFilterResult = fromDateFilterResult;
+
+            if (isToDateSet)
+            {
+                toDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, toDate) < 0);
+            }
+
+            return toDateFilterResult;
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && DataContext is StudentViewModel studentViewModel)
+            {
+                if (studentViewModel.IsDatePickerEnable)
+                {
+                    studentViewModel.IsDatePickerEnable = false;
+                    studentViewModel.IsDatePickerEnableText = "Enable";
+                    studentViewModel.FromDateFilter = new DateTime();
+                    studentViewModel.ToDateFilter = new DateTime();
+                    studentViewModel.IsToDateFilterEnable = false;
+                    studentViewModel.IsFromDateFilterEnable = false;
+                }
+                else
+                {
+                    studentViewModel.IsDatePickerEnable = true;
+                    studentViewModel.IsDatePickerEnableText = "Disable";
+                }
+            }
+        }
+
+        private string getGender(int index)
+        {
+            string gender = "";
+            switch (index)
+            {
+                case 0:
+                    gender = "None";
+                    break;
+                case 1:
+                    gender = "Male";
+                    break;
+                case 2:
+                    gender = "Female";
+                    break;
+            }
+
+            return gender;
+        }
+
+        private void CheckBox_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox 
+                && DataContext is StudentViewModel studentViewModel
+                && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
+            {
+                studentViewModel.CurrentAdministrativeInformations.Add(selectedAdministrativeInformation);
+            }
+        }
+
+        private void CheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox
+                && DataContext is StudentViewModel studentViewModel
+                && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
+            {
+                studentViewModel.CurrentAdministrativeInformations.Remove(selectedAdministrativeInformation);
+            }
+        }
+
+        private void InfoGrid_OnAddingNewItem(object sender, AddingNewItemEventArgs e)
+        {
+            
+        }
+
+        private void InfoGrid_OnInitializingNewItem(object sender, InitializingNewItemEventArgs e)
+        {
+
         }
     }
 }

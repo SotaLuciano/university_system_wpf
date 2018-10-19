@@ -43,7 +43,8 @@ namespace University_System.ViewModel
             }
         }
         public ObservableCollection<Student> Students { get; set; }
-        public  ObservableCollection<AdministrativeInformation> AdministrativeInformations { get; set; }
+        public ObservableCollection<AdministrativeInformation> AllAdministrativeInformations { get; set; }
+        public ObservableCollection<AdministrativeInformation> CurrentAdministrativeInformations { get; set; }
 
         private AdministrativeInformation _selectedRowAdministrativeInformation;
 
@@ -94,10 +95,89 @@ namespace University_System.ViewModel
             }
         }
 
+
+        // Filters
+
+        private string _lastNameFilter;
+        public  string LastNameFilter
+        {
+            get => _lastNameFilter;
+            set
+            {
+                _lastNameFilter = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _genderFilter;
+
+        public int GenderFilter
+        {
+            get => _genderFilter;
+            set
+            {
+                _genderFilter = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private DateTime _fromDateFilter;
+
+        public DateTime FromDateFilter
+        {
+            get => _fromDateFilter;
+            set
+            {
+                _fromDateFilter = value;
+                IsFromDateFilterEnable = true;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFromDateFilterEnable;
+
+
+        private DateTime _toDateFilter;
+
+        public DateTime ToDateFilter
+        {
+            get => _toDateFilter;
+            set
+            {
+                _toDateFilter = value;
+                IsFromDateFilterEnable = true;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsToDateFilterEnable;
+
+        private bool _isDatePickerEnable;
+
+        public bool IsDatePickerEnable
+        {
+            get => _isDatePickerEnable;
+            set { _isDatePickerEnable = value;
+                OnPropertyChanged(); }
+        }
+
+        private string _isDatePickerEnableText;
+
+        public string IsDatePickerEnableText
+        {
+            get => _isDatePickerEnableText;
+            set
+            {
+                _isDatePickerEnableText = value;
+                OnPropertyChanged();
+            }
+        }
+
         public StudentViewModel()
         {
             Students = new ObservableCollection<Student>();
-            AdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
+            AllAdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
+            CurrentAdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
 
             AddButtonClick = new MyCommand(AddButton);
             LoadButtonClick = new MyCommand(LoadButton);
@@ -120,6 +200,11 @@ namespace University_System.ViewModel
             GroupId = 0;
 
             IsEditModeEnabled = false;
+            GenderFilter = 0;
+            IsDatePickerEnableText = "Enable";
+            IsDatePickerEnable = false;
+            IsFromDateFilterEnable = false;
+            IsToDateFilterEnable = false;
         }
 
 
@@ -200,7 +285,7 @@ namespace University_System.ViewModel
 
         private void LoadButton()
         {
-            AdministrativeInformations.Clear();
+            AllAdministrativeInformations.Clear();
             DataGridInformation = Students;
 
             using (var db = new StudentContext())
@@ -226,7 +311,7 @@ namespace University_System.ViewModel
 
                 foreach (var info in admInfo)
                 {
-                    AdministrativeInformations.Add(new AdministrativeInformation()
+                    AllAdministrativeInformations.Add(new AdministrativeInformation()
                     {
                         GroupId = info.GroupId,
                         GroupName = info.GroupName,
@@ -384,6 +469,14 @@ namespace University_System.ViewModel
                     Students.Add(student);
                 }
 
+                LastNameFilter = "";
+                GenderFilter = 0;
+                IsDatePickerEnableText = "Enable";
+                IsDatePickerEnable = false;
+                IsFromDateFilterEnable = false;
+                IsToDateFilterEnable = false;
+
+                DataGridInformation = Students;
             }
         }
 
@@ -416,7 +509,7 @@ namespace University_System.ViewModel
 
                 db.Groups.Load();
 
-                foreach (var admInfo in AdministrativeInformations)
+                foreach (var admInfo in CurrentAdministrativeInformations)
                 {
                     var group = db.Groups.FirstOrDefault(x => x.Id == admInfo.GroupId);
                     if (group != null && group.Name != admInfo.GroupName)
