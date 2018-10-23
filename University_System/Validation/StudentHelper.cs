@@ -6,21 +6,39 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using University_System.Models;
+using University_System.ViewModel;
 
 namespace University_System.Validation
 {
     public class StudentHelper :DependencyObject
     {
-        public ObservableCollection<Student> Students
+        public StudentViewModel CurrentStudentViewModel
         {
-            get => (ObservableCollection<Student>) GetValue(ItemsProperty);
+            get => (StudentViewModel) GetValue(ItemsProperty);
             set => SetValue(ItemsProperty, value);
         }
 
         public  static  readonly DependencyProperty ItemsProperty =
-            DependencyProperty.Register("Items",
-                typeof(ObservableCollection<Student>),
+            DependencyProperty.Register("CurrentStudentViewModel",
+                typeof(StudentViewModel),
                 typeof(StudentHelper),
                 new UIPropertyMetadata(null));
+    }
+
+    public class BindingProxy : Freezable
+    {
+        protected override Freezable CreateInstanceCore()
+        {
+            return new BindingProxy();
+        }
+
+        public object Data
+        {
+            get { return (object)GetValue(DataProperty); }
+            set { SetValue(DataProperty, value); }
+        }
+
+        public static readonly DependencyProperty DataProperty =
+            DependencyProperty.Register("Data", typeof(object), typeof(BindingProxy), new PropertyMetadata(null));
     }
 }

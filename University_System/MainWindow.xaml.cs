@@ -221,35 +221,6 @@ namespace University_System
             }
         }
 
-        private IEnumerable<Student> UseFilter(string lastName, string gender, bool isFromDateSet, DateTime fromDate, bool isToDateSet, DateTime toDate, IEnumerable<Student> studentsList)
-        {
-            // Using lastname filter.
-            var lastNameFilterResult = studentsList.Where(x => x.LastName.ToLower().Contains(lastName.ToLower()));
-            var genderFilterResult = lastNameFilterResult;
-
-            // Using gender filter.
-            if (gender != "None")
-            {
-                genderFilterResult = lastNameFilterResult.Where(x => x.Gender == gender);
-            }
-
-            var fromDateFilterResult = genderFilterResult;
-            // Using fromDate filter.
-            if (isFromDateSet)
-            {
-                fromDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, fromDate) > 0);
-            }
-
-            var toDateFilterResult = fromDateFilterResult;
-            // Using toDate filter. 
-            if (isToDateSet)
-            {
-                toDateFilterResult = toDateFilterResult.Where(x => DateTime.Compare(x.BornDateTime, toDate) < 0);
-            }
-
-            return toDateFilterResult;
-        }
-
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && DataContext is StudentViewModel studentViewModel)
@@ -271,26 +242,6 @@ namespace University_System
                     studentViewModel.IsDatePickerEnableText = "Disable";
                 }
             }
-        }
-
-        private string getGender(int index)
-        {
-            // Get gender string from filter.
-            string gender = "";
-            switch (index)
-            {
-                case 0:
-                    gender = "None";
-                    break;
-                case 1:
-                    gender = "Male";
-                    break;
-                case 2:
-                    gender = "Female";
-                    break;
-            }
-
-            return gender;
         }
 
         private void CheckBox_OnChecked(object sender, RoutedEventArgs e)
@@ -322,38 +273,6 @@ namespace University_System
                 {
                     studentViewModel.CurrentAdministrativeInformations.Remove(selectedAdministrativeInformation);
                 }
-            }
-        }
-
-        private void FilterHandler(object sender, EventArgs e)
-        {
-            // One handler for all filters.
-            if (DataContext is StudentViewModel studentViewModel)
-            {
-                IEnumerable<Student> result = null;
-                if (sender is TextBox textBox)
-                {
-                    result = UseFilter(textBox.Text, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
-                        studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
-                }
-                else if (sender is ComboBox comboBox && comboBox.SelectedValue != null)
-                {
-                    result = UseFilter(studentViewModel.LastNameFilter, getGender(comboBox.SelectedIndex), false,
-                        studentViewModel.FromDateFilter, false, studentViewModel.ToDateFilter, studentViewModel.Students);
-                }
-                else if (sender is DatePicker datePicker)
-                {
-                    result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
-                        studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
-                }
-
-                // Write info to ObservableCollection.
-                ObservableCollection<Student> observableResult = new ObservableCollection<Student>();
-                foreach (var r in result)
-                {
-                    observableResult.Add(r);
-                }
-                studentViewModel.DataGridInformation = observableResult;
             }
         }
 
@@ -411,6 +330,11 @@ namespace University_System
             var test = VisualTreeHelper.GetChild(content, 0);
             if (test is Grid dGrid && dGrid.Children[0] is Popup popup)
                 popup.Focus();
+        }
+
+        private void EventSetterSelected_OnHandler(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }

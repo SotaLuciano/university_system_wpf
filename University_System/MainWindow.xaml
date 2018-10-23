@@ -640,7 +640,35 @@
                 <x:Type TypeName="models:Sex"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
-        
+
+        <Style TargetType="Button">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1"
+                                         StartPoint="0.5,0">
+                        <GradientStop Color="#f78527"
+                                      Offset="1" />
+                        <GradientStop Color="#edd640"
+                                      Offset="0" />
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1"
+                                         StartPoint="0.5,0">
+                        <GradientStop Color="#fcc96a"
+                                      Offset="1" />
+                        <GradientStop Color="#ffffff"
+                                      Offset="0" />
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -675,6 +703,15 @@
 
         <Grid Grid.ColumnSpan="3"
               Grid.Row="1">
+            <Grid.Background>
+                <LinearGradientBrush EndPoint="0.5,1"
+                                     StartPoint="0.5,0">
+                    <GradientStop Color="#fcc96a"
+                                  Offset="0" />
+                    <GradientStop Color="#ffffff"
+                                  Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" ></RowDefinition>
                 <RowDefinition Height="Auto" ></RowDefinition>
@@ -691,7 +728,9 @@
                           ItemsSource="{Binding AllAdministrativeInformations}"
                           HorizontalContentAlignment="Stretch"
                           MouseDown="MyComboBox_OnMouseDown"
-                          MouseUp="MyComboBox_OnMouseUp" DropDownClosed="MyComboBox_OnDropDownClosed">
+                          MouseUp="MyComboBox_OnMouseUp" 
+                          DropDownClosed="MyComboBox_OnDropDownClosed"
+                          IsEnabled="{Binding Path=IsDataLoaded}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Margin="2" 
@@ -705,6 +744,15 @@
                                     <ControlTemplate>
                                         <Grid x:Name="gd" 
                                               TextElement.Foreground="Black">
+                                            <Grid.Background>
+                                                <LinearGradientBrush EndPoint="0.5,1"
+                                                                     StartPoint="0.5,0">
+                                                    <GradientStop Color="#fcc96a"
+                                                                  Offset="1" />
+                                                    <GradientStop Color="#ffffff"
+                                                                  Offset="0" />
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
@@ -731,7 +779,7 @@
                                                      Value="True">
                                                 <Setter TargetName="gd"  
                                                         Property="Background" 
-                                                        Value="Gray"></Setter>
+                                                        Value="#f48e00"></Setter>
                                                 <Setter TargetName="gd"  
                                                         Property="TextElement.Foreground" 
                                                         Value="White"></Setter>
@@ -739,11 +787,12 @@
                                             <Trigger Property="ComboBoxItem.IsMouseOver" 
                                                      Value="True">
                                                 <Setter TargetName="gd"
-                                                        Property="Background" 
-                                                        Value="Blue"></Setter>
+                                                        Property="Background"
+                                                        Value="#ffdd00">
+                                                </Setter>
                                                 <Setter TargetName="gd"  
                                                         Property="TextElement.Foreground" 
-                                                        Value="White"></Setter>
+                                                        Value="Black"></Setter>
                                             </Trigger>
                                             <Trigger Property="ComboBoxItem.IsSelected"
                                                      Value="True">
@@ -752,6 +801,7 @@
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+                            <EventSetter Event="Selected" Handler="EventSetterSelected_OnHandler"></EventSetter>
                         </Style>
                     </ComboBox.ItemContainerStyle>
                 </ComboBox>
@@ -761,7 +811,7 @@
                        Grid.Column="1"
                        Margin="0,5,20,5">
                 <Label Content="LastName: "></Label>
-                <TextBox Text="{Binding Path=LastNameFilter}"
+                <TextBox Text="{Binding Path=LastNameFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          TextChanged="FilterHandler"></TextBox>
             </DockPanel>
 
@@ -807,10 +857,14 @@
                   CanUserAddRows="True"
                   InitializingNewItem="InfoGrid_OnInitializingNewItem"
                   MinWidth="400">
+            <DataGrid.Resources>
+                <validation:BindingProxy Data="{Binding}" x:Key="test"/>
+            </DataGrid.Resources>
             <DataGrid.Columns>
 
                 <DataGridTextColumn Binding="{Binding Path=GroupId}"
-                                    Header="GroupId"></DataGridTextColumn>
+                                    Header="GroupId">
+                </DataGridTextColumn>
 
                 <DataGridTextColumn Binding="{Binding Path=FirstName}"
                                     Header="FirstName">
@@ -872,9 +926,27 @@
                                     Header="Address">
                 </DataGridTextColumn>
 
-                <DataGridTextColumn Binding="{Binding Path=BornDateTime}"
-                                    Header="BornDateTime">
-                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="BornDateTime"
+                                        SortMemberPath="BornDateTime"
+                                        x:Name="BornDateTimeColumn">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RelativeSource={RelativeSource Self}, 
+                                                    Mode=TwoWay, 
+                                                    Path=DataContext.BornDateTime, 
+                                                    UpdateSourceTrigger=PropertyChanged}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <DatePicker SelectedDate="{Binding RelativeSource={RelativeSource Self}, 
+                                                            Path=DataContext.BornDateTime, 
+                                                            Mode=TwoWay, 
+                                                            UpdateSourceTrigger=PropertyChanged}">
+                            </DatePicker>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
 
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
@@ -897,9 +969,9 @@
             <DataGrid.RowValidationRules>
                 <DataErrorValidationRule ValidationStep="UpdatedValue"/>
                 <validation:ColumnValidation ValidationStep="UpdatedValue">
-                    <!--<validation:ColumnValidation.StudentList>
-                        <validation:StudentHelper Students="{StaticResource StudentModel}"></validation:StudentHelper>
-                        </validation:ColumnValidation.StudentList>-->
+                    <validation:ColumnValidation.CurrentStudentViewModel>
+                        <validation:StudentHelper CurrentStudentViewModel="{Binding Path=Data, Source={StaticResource test}}"></validation:StudentHelper>
+                        </validation:ColumnValidation.CurrentStudentViewModel>
                 </validation:ColumnValidation>
             </DataGrid.RowValidationRules>
         </DataGrid>

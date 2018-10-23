@@ -8,64 +8,77 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 using University_System.Models;
+using University_System.ViewModel;
 
 namespace University_System.Validation
 {
     public class ColumnValidation: ValidationRule
     {
-        private StudentHelper _studentList;
+        private StudentHelper _currentStudentViewModel;
 
-        public StudentHelper StudentList
+        public StudentHelper CurrentStudentViewModel
         {
-            get => _studentList;
-            set => _studentList = value;
+            get => _currentStudentViewModel;
+            set => _currentStudentViewModel = value;
         }
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            if(value == null)
+            string error = "";
+            if (value == null)
+            {
                 return ValidationResult.ValidResult;
+            }
 
             var student = (Student)((BindingGroup) value).Items[0];
 
             if (student.FirstName != null && !(Regex.IsMatch(student.FirstName, "^[a-zA-Z]{1,20}$")))
             {
-                return new ValidationResult(false, "Wrong first name!");
+                error = "Wrong first name!";
             }
             else if (student.LastName != null && !(Regex.IsMatch(student.LastName, "^[a-zA-Z]{1,20}$")))
             {
-                return new ValidationResult(false, "Wrong second name!");
+                error = "Wrong last name!";
             }
             else if (((student.Age < 14) || (student.Age > 100)))
             {
-                return new ValidationResult(false, "Wrong age!");
+                error = "Wrong age!";
             }
             else if (student.Email != null && !(Regex.IsMatch(student.Email, @"^[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$")))
             {
-                return new ValidationResult(false, "Wrong email! Example: 'myemail@gmail.com'!");
+                error = "Wrong email! Example: 'myemail@gmail.com'!";
             }
             else if (student.PhoneNumber != null && !(Regex.IsMatch(student.PhoneNumber, @"^\+380\d\d[-]\d\d\d[-]\d\d[-]\d\d$")))
             {
-                return new ValidationResult(false, "Wrong phone number! Example: '+38011-111-11-11'");
+                error = "Wrong phone number! Example: '+38011-111-11-11'";
             }
             else if (!(Regex.IsMatch(student.BornDateTime.ToShortDateString(),
                 @"^\d\d(\.|\/|\-)\d\d(\.|\/|\-)\d\d\d\d$")))
             {
-                return new ValidationResult(false, "Wrong date");
+                error = "Wrong date!";
             }
             int result = DateTime.Compare(student.BornDateTime, DateTime.Now);
 
             if (result >= 0)
             {
-                return new ValidationResult(false, "Wrong date");
+                error = "Wrong date.";
             }
             result = DateTime.Compare(student.BornDateTime, new DateTime(1900, 1, 1));
 
             if (result <= 0)
             {
-                return new ValidationResult(false, "Wrong date");
+                error = "Wrong date";
             }
-            return ValidationResult.ValidResult;
 
+            if (error == "")
+            {
+                CurrentStudentViewModel.CurrentStudentViewModel.IsSaveEnable = true;
+                return ValidationResult.ValidResult;
+            }
+            else
+            {
+                CurrentStudentViewModel.CurrentStudentViewModel.IsSaveEnable = false;
+                return new ValidationResult(false, error);
+            }
         }
     }
 }

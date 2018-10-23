@@ -33,6 +33,31 @@ namespace University_System.ViewModel
             }
         }
 
+        private bool _isDataLoaded;
+        public bool IsDataLoaded
+        {
+            get => _isDataLoaded;
+            set
+            {
+                _isDataLoaded = value;
+                OnPropertyChanged();
+            }
+
+        }
+
+        private bool _isSaveEnable;
+
+        public bool IsSaveEnable
+        {
+            get => _isSaveEnable;
+            set
+            {
+                _isSaveEnable = value;
+                OnPropertyChanged();
+                SaveButtonClick.CanExecute(null);
+            }
+        }
+
         // Item source for InfoGrid.
         private IEnumerable _dataGridInformation;
         public IEnumerable DataGridInformation
@@ -108,6 +133,7 @@ namespace University_System.ViewModel
             {
                 _lastNameFilter = value;
                 OnPropertyChanged();
+                FilterHandler();
             }
         }
 
@@ -119,6 +145,7 @@ namespace University_System.ViewModel
             {
                 _genderFilter = value;
                 OnPropertyChanged();
+                FilterHandler();
             }
         }
 
@@ -131,6 +158,7 @@ namespace University_System.ViewModel
                 _fromDateFilter = value;
                 IsFromDateFilterEnable = true;
                 OnPropertyChanged();
+                FilterHandler();
             }
         }
         public bool IsFromDateFilterEnable;
@@ -144,6 +172,7 @@ namespace University_System.ViewModel
                 _toDateFilter = value;
                 IsToDateFilterEnable = true;
                 OnPropertyChanged();
+                FilterHandler();
             }
         }
         public bool IsToDateFilterEnable;
@@ -152,8 +181,12 @@ namespace University_System.ViewModel
         public bool IsDatePickerEnable
         {
             get => _isDatePickerEnable;
-            set { _isDatePickerEnable = value;
-                OnPropertyChanged(); }
+            set
+            {
+                _isDatePickerEnable = value;
+                OnPropertyChanged();
+                FilterHandler();
+            }
         }
 
         // Text on the button - 'Enable' - 'Disable'.
@@ -180,7 +213,7 @@ namespace University_System.ViewModel
             LoadButtonClick = new MyCommand(LoadButton);
             EditButtonClick = new MyCommand(EditButton);
             CancelButtonClick = new MyCommand(CancelButton);
-            SaveButtonClick = new MyCommand(SaveButton);
+            SaveButtonClick = new MyCommand(SaveButton, ()=>IsSaveEnable);
             RemoveStudentButtonClick = new CommandWithParameter<object>(RemoveStudentButton);
             RemoveGroupButtonClick = new CommandWithParameter<object>(RemoveGroupButton);
             AddStudentToGroupButtonClick = new CommandWithParameter<object>(AddStudentToGroupButton);
@@ -202,6 +235,9 @@ namespace University_System.ViewModel
             IsDatePickerEnable = false;
             IsFromDateFilterEnable = false;
             IsToDateFilterEnable = false;
+
+            IsDataLoaded = false;
+            IsSaveEnable = true;
         }
 
         public int Id { get; set; }
@@ -273,6 +309,7 @@ namespace University_System.ViewModel
         private void LoadButton()
         {
             AllAdministrativeInformations.Clear();
+            CurrentAdministrativeInformations.Clear();
             DataGridInformation = Students;
 
             using (var db = new StudentContext())
@@ -309,7 +346,8 @@ namespace University_System.ViewModel
                     });
                 }
             }
-
+            // Set combobox enable.
+            IsDataLoaded = true;
         }
 
         private async void RemoveStudentButton(object parameter)
@@ -530,7 +568,7 @@ namespace University_System.ViewModel
             
             // Turn off edit mode and reload grid.
             IsEditModeEnabled = false;
-            LoadButton();
+            SelectedGroupChanged();
         }
 
         private void EditButton()
@@ -563,8 +601,72 @@ namespace University_System.ViewModel
 
             }
             // Turn off edit mode and reload grid.
-            LoadButton();
+            SelectedGroupChanged();
             IsEditModeEnabled = false;
+        }
+
+        private string GetGender(int index)
+        {
+            // Get gender string from filter.
+            string gender = "";
+            switch (index)
+            {
+                case 0:
+                    gender = "None";
+                    break;
+                case 1:
+                    gender = "Male";
+                    break;
+                case 2:
+                    gender = "Female";
+                    break;
+            }
+
+            return gender;
+        }
+
+        private void FilterHandler()
+        {
+            // One handler for all filters.
+            IEnumerable<Student> result = UseFilter(LastNameFilter, GetGender(GenderFilter), IsFromDateFilterEnable,
+                                                    FromDateFilter, IsToDateFilterEnable, ToDateFilter, Students);
+
+            // Write info to ObservableCollection.
+            ObservableCollection<Student> observableResult = new ObservableCollection<Student>();
+            foreach (var r in result)
+            {
+                observableResult.Add(r);
+            }
+            DataGridInformation = observableResult;
+        }
+
+        private IEnumerable<Student> UseFilter(string lastName, string gender, bool isFromDateSet, DateTime fromDate, bool isToDateSet, DateTime toDate, IEnumerable<Student> studentsList)
+        {
+            // Using lastname filter.
+            var lastNameFilterResult = studentsList.Where(x => x.LastName.ToLower().Contains(lastName.ToLower()));
+            var genderFilterResult = lastNameFilterResult;
+
+            // Using gender filter.
+            if (gender != "None")
+            {
+                genderFilterResult = lastNameFilterResult.Where(x => x.Gender == gender);
+            }
+
+            var fromDateFilterResult = genderFilterResult;
+            // Using fromDate filter.
+            if (isFromDateSet)
+            {
+                fromDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, fromDate) > 0);
+            }
+
+            var toDateFilterResult = fromDateFilterResult;
+            // Using toDate filter. 
+            if (isToDateSet)
+            {
+                toDateFilterResult = toDateFilterResult.Where(x => DateTime.Compare(x.BornDateTime, toDate) < 0);
+            }
+
+            return toDateFilterResult;
         }
 
         // Data Validation.
