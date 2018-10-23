@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using University_System.Models;
 using University_System.ViewModel;
+using Xceed.Wpf.AvalonDock.Controls;
 
 namespace University_System
 {
@@ -16,6 +18,7 @@ namespace University_System
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Phone number validation check.
         private int _countOfCharactersInTextBox;
         public MainWindow()
         {
@@ -90,6 +93,7 @@ namespace University_System
 
                 if (dataGridColumn != null && (dataGridColumn.Header.ToString() == "PhoneNumber" || dataGridColumn.Header.ToString() == "Age"))
                 {
+                    // Prevent to input character.
                     if (!Char.IsDigit(e.Text, 0))
                         e.Handled = true;
                 }
@@ -98,64 +102,72 @@ namespace University_System
 
         private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            TextBox txtBox = (TextBox)sender;
-            string number = txtBox.Text, newNumber = "";
-            if (number == "")
-                return;
-            if (number[number.Length - 1] == ' ')
+            // Phone number validation input.
+            if (sender is TextBox txtBox)
             {
-                number = number.Substring(0, number.Length - 1);
-                txtBox.Text = number;
-            }
-            if (_countOfCharactersInTextBox > txtBox.Text.Length)
-            {
+                if (txtBox.Text == "")
+                    return;
+
+                string number = txtBox.Text;
+                string newNumber = "";
+                if (number[number.Length - 1] == ' ')
+                {
+                    number = number.Substring(0, number.Length - 1);
+                    txtBox.Text = number;
+                }
+                if (_countOfCharactersInTextBox > txtBox.Text.Length)
+                {
+                    _countOfCharactersInTextBox = txtBox.Text.Length;
+                    if (number == "+38")
+                    {
+                        txtBox.Text += "0";
+                    }
+                    return;
+                }
+
+                if (txtBox.Text.Length == 7)
+                {
+                    for (int i = 0; i < 6; i++)
+                    {
+                        newNumber += number[i];
+                    }
+                    newNumber += "-";
+                    newNumber += number[6];
+                    txtBox.Text = newNumber;
+                }
+                else if (txtBox.Text.Length == 11)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        newNumber += number[i];
+                    }
+                    newNumber += "-";
+                    newNumber += number[10];
+                    txtBox.Text = newNumber;
+                }
+                else if (txtBox.Text.Length == 14)
+                {
+                    for (int i = 0; i < 13; i++)
+                    {
+                        newNumber += number[i];
+                    }
+                    newNumber += "-";
+                    newNumber += number[13];
+                    txtBox.Text = newNumber;
+                }
+                txtBox.SelectionStart = txtBox.Text.Length;
                 _countOfCharactersInTextBox = txtBox.Text.Length;
-                if (number == "+38")
-                {
-                    txtBox.Text += "0";
-                }
-                return;
             }
-
-            if (txtBox.Text.Length == 7)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    newNumber += number[i];
-                }
-                newNumber += "-";
-                newNumber += number[6];
-                txtBox.Text = newNumber;
-            }
-            else if (txtBox.Text.Length == 11)
-            {
-                for (int i = 0; i < 10; i++)
-                {
-                    newNumber += number[i];
-                }
-                newNumber += "-";
-                newNumber += number[10];
-                txtBox.Text = newNumber;
-            }
-            else if (txtBox.Text.Length == 14)
-            {
-                for (int i = 0; i < 13; i++)
-                {
-                    newNumber += number[i];
-                }
-                newNumber += "-";
-                newNumber += number[13];
-                txtBox.Text = newNumber;
-            }
-
-            txtBox.SelectionStart = txtBox.Text.Length;
-            _countOfCharactersInTextBox = txtBox.Text.Length;
         }
 
         private void UIElement_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            ((TextBox)sender).SelectionLength = 0;
-            ((TextBox)sender).SelectionStart = ((TextBox)sender).Text.Length;
+            // Set pointer to the end.
+            if (sender is TextBox textBox)
+            {
+                textBox.SelectionLength = 0;
+                textBox.SelectionStart = textBox.Text.Length;
+            }
         }
 
         private void EventSetterMouseDoubleClick_OnHandler(object sender, MouseEventArgs e)
@@ -164,27 +176,23 @@ namespace University_System
             {
                 return;
             }
-            if (sender is DataGridRow dataGridRow)
+
+            if (sender is DataGridRow dataGridRow && DataContext is StudentViewModel studentViewModel)
             {
+                string info = "";
+
                 if (dataGridRow.DataContext is AdministrativeInformation admInfo)
                 {
-                    string info = "";
+                    // Creating popup text information.
                     info += "GroupID =" + admInfo.GroupId + "\n";
                     info += "GroupName = " + admInfo.GroupName + "\n";
                     info += "SpecializationName = " + admInfo.SpecializationName + "\n";
                     info += "DepartmentName = " + admInfo.DepartmentName + "\n";
                     info += "InstituteName =" + admInfo.InstituteName;
-
-                    if (DataContext is StudentViewModel studentViewModel)
-                    {
-                        studentViewModel.IsPopupOpen = true;
-                        studentViewModel.PopupPlacementMode = PlacementMode.MousePoint;
-                        studentViewModel.PopupText = info;
-                    }
                 }
                 else if (dataGridRow.DataContext is Student student)
                 {
-                    string info = "";
+                    // Creating popup text information.
                     info += "ID =" + student.Id + "\n";
                     info += "GroupID = " + student.GroupId + "\n";
                     info += "FirstName = " + student.FirstName + "\n";
@@ -195,87 +203,48 @@ namespace University_System
                     info += "PhoneNumber = " + student.PhoneNumber + "\n";
                     info += "Address = " + student.Address + "\n";
                     info += "BornDateTime = " + student.BornDateTime;
-
-                    if (DataContext is StudentViewModel studentViewModel)
-                    {
-                        studentViewModel.IsPopupOpen = true;
-                        studentViewModel.PopupPlacementMode = PlacementMode.MousePoint;
-                        studentViewModel.PopupText = info;
-                    }
                 }
+
+                // Open popup.
+                studentViewModel.IsPopupOpen = true;
+                studentViewModel.PopupPlacementMode = PlacementMode.MousePoint;
+                studentViewModel.PopupText = info;
             }
         }
 
         private void EventSetter_OnHandler(object sender, RoutedEventArgs e)
         {
+            // Close popup.
             if (DataContext is StudentViewModel studentViewModel)
             {
                 studentViewModel.IsPopupOpen = false;
             }
         }
 
-        private void TextBoxBaseFilter_OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (sender is TextBox textBox && DataContext is StudentViewModel studentViewModel)
-            {
-               var result = UseFilter(textBox.Text, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
-                    studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
-
-                studentViewModel.DataGridInformation = result;
-            }
-        }
-
-        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox comboBox && DataContext is StudentViewModel studentViewModel && comboBox.SelectedValue != null)
-            {
-                var result = UseFilter(studentViewModel.LastNameFilter, getGender(comboBox.SelectedIndex), false,
-                    studentViewModel.FromDateFilter, false, studentViewModel.ToDateFilter, studentViewModel.Students);
-                studentViewModel.DataGridInformation = result;
-            }
-        }
-        private void DatePickerFrom_OnSelectedDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is DatePicker datePicker && DataContext is StudentViewModel studentViewModel)
-            {
-                var result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), true,
-                    datePicker.DisplayDate, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
-                studentViewModel.DataGridInformation = result;
-            }
-        }
-
-        private void DatePickerTo_OnSelectedDateChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is DatePicker datePicker && DataContext is StudentViewModel studentViewModel)
-            {
-                var result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
-                    studentViewModel.FromDateFilter, true, datePicker.DisplayDate, studentViewModel.Students);
-                studentViewModel.DataGridInformation = result;
-            }
-        }
-
         private IEnumerable<Student> UseFilter(string lastName, string gender, bool isFromDateSet, DateTime fromDate, bool isToDateSet, DateTime toDate, IEnumerable<Student> studentsList)
         {
+            // Using lastname filter.
             var lastNameFilterResult = studentsList.Where(x => x.LastName.ToLower().Contains(lastName.ToLower()));
             var genderFilterResult = lastNameFilterResult;
 
+            // Using gender filter.
             if (gender != "None")
             {
                 genderFilterResult = lastNameFilterResult.Where(x => x.Gender == gender);
             }
 
             var fromDateFilterResult = genderFilterResult;
-
+            // Using fromDate filter.
             if (isFromDateSet)
             {
                 fromDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, fromDate) > 0);
             }
 
             var toDateFilterResult = fromDateFilterResult;
-
+            // Using toDate filter. 
             if (isToDateSet)
             {
-                toDateFilterResult = genderFilterResult.Where(x => DateTime.Compare(x.BornDateTime, toDate) < 0);
+                toDateFilterResult = toDateFilterResult.Where(x => DateTime.Compare(x.BornDateTime, toDate) < 0);
             }
 
             return toDateFilterResult;
@@ -287,6 +256,7 @@ namespace University_System
             {
                 if (studentViewModel.IsDatePickerEnable)
                 {
+                    // Turn off datePicker.
                     studentViewModel.IsDatePickerEnable = false;
                     studentViewModel.IsDatePickerEnableText = "Enable";
                     studentViewModel.FromDateFilter = new DateTime();
@@ -296,6 +266,7 @@ namespace University_System
                 }
                 else
                 {
+                    // Turn on datePicker.
                     studentViewModel.IsDatePickerEnable = true;
                     studentViewModel.IsDatePickerEnableText = "Disable";
                 }
@@ -304,6 +275,7 @@ namespace University_System
 
         private string getGender(int index)
         {
+            // Get gender string from filter.
             string gender = "";
             switch (index)
             {
@@ -327,7 +299,13 @@ namespace University_System
                 && DataContext is StudentViewModel studentViewModel
                 && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
             {
-                studentViewModel.CurrentAdministrativeInformations.Add(selectedAdministrativeInformation);
+                // Add group to datagrid if it is selected.
+                var checkedAdministrativeInformations = studentViewModel.CurrentAdministrativeInformations.FirstOrDefault(x =>
+                    x.GroupId == selectedAdministrativeInformation.GroupId);
+                if (checkedAdministrativeInformations == null)
+                {
+                    studentViewModel.CurrentAdministrativeInformations.Add(selectedAdministrativeInformation);
+                }
             }
         }
 
@@ -337,18 +315,102 @@ namespace University_System
                 && DataContext is StudentViewModel studentViewModel
                 && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
             {
-                studentViewModel.CurrentAdministrativeInformations.Remove(selectedAdministrativeInformation);
+                // Remove group from datagrid if it is deselected.
+                var  checkedAdministrativeInformations = studentViewModel.CurrentAdministrativeInformations.FirstOrDefault(x =>
+                    x.GroupId == selectedAdministrativeInformation.GroupId);
+                if (checkedAdministrativeInformations != null)
+                {
+                    studentViewModel.CurrentAdministrativeInformations.Remove(selectedAdministrativeInformation);
+                }
             }
         }
 
-        private void InfoGrid_OnAddingNewItem(object sender, AddingNewItemEventArgs e)
+        private void FilterHandler(object sender, EventArgs e)
         {
-            
+            // One handler for all filters.
+            if (DataContext is StudentViewModel studentViewModel)
+            {
+                IEnumerable<Student> result = null;
+                if (sender is TextBox textBox)
+                {
+                    result = UseFilter(textBox.Text, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
+                        studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
+                }
+                else if (sender is ComboBox comboBox && comboBox.SelectedValue != null)
+                {
+                    result = UseFilter(studentViewModel.LastNameFilter, getGender(comboBox.SelectedIndex), false,
+                        studentViewModel.FromDateFilter, false, studentViewModel.ToDateFilter, studentViewModel.Students);
+                }
+                else if (sender is DatePicker datePicker)
+                {
+                    result = UseFilter(studentViewModel.LastNameFilter, getGender(studentViewModel.GenderFilter), studentViewModel.IsFromDateFilterEnable,
+                        studentViewModel.FromDateFilter, studentViewModel.IsToDateFilterEnable, studentViewModel.ToDateFilter, studentViewModel.Students);
+                }
+
+                // Write info to ObservableCollection.
+                ObservableCollection<Student> observableResult = new ObservableCollection<Student>();
+                foreach (var r in result)
+                {
+                    observableResult.Add(r);
+                }
+                studentViewModel.DataGridInformation = observableResult;
+            }
         }
 
         private void InfoGrid_OnInitializingNewItem(object sender, InitializingNewItemEventArgs e)
         {
+            if (sender is DataGrid dataGrid && dataGrid.Items.Count > 1)
+            {
+                if (dataGrid.Items.CurrentItem is Student student)
+                {
+                    // Setting initial information - 'groupId' and 'phoneNumber'.
+                    student.GroupId = (dataGrid.Items[0] as Student).GroupId;
+                    student.PhoneNumber = "+380";
+                }
+            }
+        }
 
+        private void MyComboBox_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBlock textBlock
+                && textBlock.TemplatedParent is ComboBoxItem comboBoxItem)
+            {
+                // Get checkbox.
+                var children = VisualTreeHelper.GetChild(comboBoxItem, 0);
+                if (children != null 
+                    && children is Grid grid 
+                    && grid.Children[0] is CheckBox checkBox)
+                {
+                    if (checkBox.IsChecked == false)
+                    {
+                        checkBox.IsChecked = true;
+                    }
+                    else
+                    {
+                        checkBox.IsChecked = false;
+                    }
+
+                }
+            }
+            
+        }
+
+        private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            myComboBox.IsDropDownOpen = true;
+        }
+
+        private void MyComboBox_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            myComboBox.IsDropDownOpen = true;
+        }
+
+        private void MyComboBox_OnDropDownClosed(object sender, EventArgs e)
+        {
+            var content = sender as ComboBox;
+            var test = VisualTreeHelper.GetChild(content, 0);
+            if (test is Grid dGrid && dGrid.Children[0] is Popup popup)
+                popup.Focus();
         }
     }
 }

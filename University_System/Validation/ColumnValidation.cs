@@ -52,7 +52,18 @@ namespace University_System.Validation
             {
                 return new ValidationResult(false, "Wrong date");
             }
+            int result = DateTime.Compare(student.BornDateTime, DateTime.Now);
 
+            if (result >= 0)
+            {
+                return new ValidationResult(false, "Wrong date");
+            }
+            result = DateTime.Compare(student.BornDateTime, new DateTime(1900, 1, 1));
+
+            if (result <= 0)
+            {
+                return new ValidationResult(false, "Wrong date");
+            }
             return ValidationResult.ValidResult;
 
         }
