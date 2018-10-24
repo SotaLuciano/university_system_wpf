@@ -22,6 +22,7 @@
         <converter:SelectedItemToBoolConverter x:Key="SelectedItemToBoolConverter"></converter:SelectedItemToBoolConverter>
         <converter:DataContextToTextConverter x:Key="DataContextToTextConverter"></converter:DataContextToTextConverter>
         <converter:IntToBooleanConverter x:Key="IntToBooleanConverter"></converter:IntToBooleanConverter>
+        <converter:PasteCellContextButtonIsEnableConverter x:Key="PasteCellContextButtonIsEnableConverter"></converter:PasteCellContextButtonIsEnableConverter>
         <!--Control colors.-->
         <Color x:Key="ControlLightColor">White</Color>
         <Color x:Key="ControlMediumColor">#ffffff</Color>
@@ -811,8 +812,9 @@
                        Grid.Column="1"
                        Margin="0,5,20,5">
                 <Label Content="LastName: "></Label>
-                <TextBox Text="{Binding Path=LastNameFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         TextChanged="FilterHandler"></TextBox>
+                <TextBox Text="{Binding Path=LastNameFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+
+                </TextBox>
             </DockPanel>
 
             <DockPanel Grid.Row="1"
@@ -820,12 +822,10 @@
                        Margin="10,5,20,5">
                 <Label Content="From: "></Label>
                 <DatePicker SelectedDate="{Binding Path=FromDateFilter, Mode=TwoWay}"
-                            IsEnabled="{Binding IsDatePickerEnable}"
-                            SelectedDateChanged="FilterHandler"></DatePicker>
+                            IsEnabled="{Binding IsDatePickerEnable}"></DatePicker>
                 <Label Content="To: "></Label>
                 <DatePicker SelectedDate="{Binding Path=ToDateFilter, Mode=TwoWay}"
-                            IsEnabled="{Binding IsDatePickerEnable}"
-                            SelectedDateChanged="FilterHandler"></DatePicker>
+                            IsEnabled="{Binding IsDatePickerEnable}"></DatePicker>
                 <Button Content="{Binding Path=IsDatePickerEnableText, Mode=TwoWay}"
                         Margin="10,0,0,0"
                         Click="ButtonBase_OnClick"></Button>
@@ -835,8 +835,7 @@
                        Grid.Column="1"
                        Margin="0,5,20,5">
                 <Label Content="Gender: "></Label>
-                <ComboBox SelectionChanged="FilterHandler"
-                          SelectedIndex="{Binding Path=GenderFilter, Mode=TwoWay}">
+                <ComboBox SelectedIndex="{Binding Path=GenderFilter, Mode=TwoWay}">
                     <ComboBoxItem Content="None"></ComboBoxItem>
                     <ComboBoxItem Content="Male"></ComboBoxItem>
                     <ComboBoxItem Content="Female"></ComboBoxItem>
@@ -858,7 +857,7 @@
                   InitializingNewItem="InfoGrid_OnInitializingNewItem"
                   MinWidth="400">
             <DataGrid.Resources>
-                <validation:BindingProxy Data="{Binding}" x:Key="test"/>
+                <validation:BindingProxy Data="{Binding}" x:Key="dataContext"/>
             </DataGrid.Resources>
             <DataGrid.Columns>
 
@@ -952,25 +951,57 @@
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Add student"
-                              Command="{Binding AddStudentToGroupButtonClick}"
-                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              Command="{Binding AddStudentToGroupContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem}"
                               IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
-
                     <MenuItem Header="Remove student"
-                              Command="{Binding RemoveStudentButtonClick}"
-                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              Command="{Binding RemoveStudentContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem}"
                               IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
                     <MenuItem Header="Duplicate student"
-                              Command="{Binding DuplicateStudentButtonClick}"
-                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              Command="{Binding DuplicateStudentContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem}"
                               IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                    <Separator />
+                    <MenuItem Header="Copy cell"
+                              Command="{Binding CopyCellContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.CurrentCell.Column, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                    <MenuItem Header="Paste cell"
+                              Command="{Binding PasteCellContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}">
+                        <MenuItem.IsEnabled>
+                            <MultiBinding Converter="{StaticResource PasteCellContextButtonIsEnableConverter}">
+                                <Binding RelativeSource="{RelativeSource Self}" Path="Parent.PlacementTarget.CurrentCell.Column"></Binding>
+                                <Binding RelativeSource="{RelativeSource Self}" Path="DataContext.IsEditModeEnabled"></Binding>
+                                <Binding RelativeSource="{RelativeSource Self}" Path="DataContext.CopiedDataGridCell.Column"></Binding>
+
+                            </MultiBinding>
+                        </MenuItem.IsEnabled>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Copy row"
+                              Command="{Binding CopyRowContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem}"
+                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
+                    <MenuItem Header="Paste row"
+                              Command="{Binding PasteRowContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget}">
+                        <MenuItem.IsEnabled>
+                            <MultiBinding Converter="{StaticResource PasteCellContextButtonIsEnableConverter}">
+                                <Binding RelativeSource="{RelativeSource Self}" Path="Parent.PlacementTarget.SelectedItem"></Binding>
+                                <Binding RelativeSource="{RelativeSource Self}" Path="DataContext.IsEditModeEnabled"></Binding>
+                                <Binding RelativeSource="{RelativeSource Self}" Path="DataContext.CopiedDataGridRow"></Binding>
+                            </MultiBinding>
+                        </MenuItem.IsEnabled>
+                    </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.RowValidationRules>
                 <DataErrorValidationRule ValidationStep="UpdatedValue"/>
                 <validation:ColumnValidation ValidationStep="UpdatedValue">
                     <validation:ColumnValidation.CurrentStudentViewModel>
-                        <validation:StudentHelper CurrentStudentViewModel="{Binding Path=Data, Source={StaticResource test}}"></validation:StudentHelper>
+                        <validation:StudentHelper CurrentStudentViewModel="{Binding Path=Data, Source={StaticResource dataContext}}"></validation:StudentHelper>
                         </validation:ColumnValidation.CurrentStudentViewModel>
                 </validation:ColumnValidation>
             </DataGrid.RowValidationRules>
@@ -1035,12 +1066,8 @@
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Remove group"
-                              Command="{Binding RemoveGroupButtonClick}"
-                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
-                              IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
-                    <MenuItem Header="Add student to group"
-                              Command="{Binding AddStudentToGroupButtonClick}"
-                              CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                              Command="{Binding RemoveGroupContextButtonClick}"
+                              CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem}"
                               IsEnabled="{Binding RelativeSource={RelativeSource Self}, Path=Parent.PlacementTarget.SelectedItem, Converter={StaticResource SelectedItemToBoolConverter}}"></MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>

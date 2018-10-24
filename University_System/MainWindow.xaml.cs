@@ -296,8 +296,8 @@ namespace University_System
             {
                 // Get checkbox.
                 var children = VisualTreeHelper.GetChild(comboBoxItem, 0);
-                if (children != null 
-                    && children is Grid grid 
+                if (children != null
+                    && children is Grid grid
                     && grid.Children[0] is CheckBox checkBox)
                 {
                     if (checkBox.IsChecked == false)
@@ -308,10 +308,8 @@ namespace University_System
                     {
                         checkBox.IsChecked = false;
                     }
-
                 }
             }
-            
         }
 
         private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
@@ -334,7 +332,25 @@ namespace University_System
 
         private void EventSetterSelected_OnHandler(object sender, RoutedEventArgs e)
         {
-            
+            //if (sender is ComboBoxItem comboBoxItem)
+            //{
+            //    // Get checkbox.
+            //    var children = VisualTreeHelper.GetChild(comboBoxItem, 0);
+            //    if (children != null
+            //        && children is Grid grid
+            //        && grid.Children[0] is CheckBox checkBox)
+            //    {
+            //        if (checkBox.IsChecked == false)
+            //        {
+            //            checkBox.IsChecked = true;
+            //        }
+            //        else
+            //        {
+            //            checkBox.IsChecked = false;
+            //        }
+
+            //    }
+            //}
         }
     }
 }

@@ -201,6 +201,53 @@ namespace University_System.ViewModel
             }
         }
 
+        private DataGridCellInfo _copiedDataGridCell;
+        public DataGridCellInfo CopiedDataGridCell
+        {
+            get => _copiedDataGridCell;
+            set
+            {
+                _copiedDataGridCell = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Student _copiedDataGridRow;
+        public Student CopiedDataGridRow
+        {
+            get => _copiedDataGridRow;
+            set
+            {
+                _copiedDataGridRow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Age { get; set; }
+        public string Gender { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Address { get; set; }
+        public DateTime BornDateTime { get; set; }
+        public int GroupId { get; set; }
+
+        public ICommand AddButtonClick { get; }
+        public ICommand LoadButtonClick { get; }
+        public ICommand RemoveStudentContextButtonClick { get; }
+        public ICommand SaveButtonClickAddNewStudentWindow { get; set; }
+        public ICommand EditButtonClick { get; set; }
+        public ICommand CancelButtonClick { get; set; }
+        public ICommand SaveButtonClick { get; set; }
+        public ICommand RemoveGroupContextButtonClick { get; }
+        public ICommand AddStudentToGroupContextButtonClick { get; }
+        public ICommand DuplicateStudentContextButtonClick { get; }
+        public ICommand CopyCellContextButtonClick { get; }
+        public ICommand PasteCellContextButtonClick { get; }
+        public ICommand CopyRowContextButtonClick { get; }
+        public ICommand PasteRowContextButtonClick { get; }
         public StudentViewModel()
         {
             // Setting initial data.
@@ -214,10 +261,14 @@ namespace University_System.ViewModel
             EditButtonClick = new MyCommand(EditButton);
             CancelButtonClick = new MyCommand(CancelButton);
             SaveButtonClick = new MyCommand(SaveButton, ()=>IsSaveEnable);
-            RemoveStudentButtonClick = new CommandWithParameter<object>(RemoveStudentButton);
-            RemoveGroupButtonClick = new CommandWithParameter<object>(RemoveGroupButton);
-            AddStudentToGroupButtonClick = new CommandWithParameter<object>(AddStudentToGroupButton);
-            DuplicateStudentButtonClick = new CommandWithParameter<object>(DuplicateStudentButton);
+            RemoveStudentContextButtonClick = new CommandWithParameter<object>(RemoveStudentContextButton);
+            RemoveGroupContextButtonClick = new CommandWithParameter<object>(RemoveGroupContextButton);
+            AddStudentToGroupContextButtonClick = new CommandWithParameter<object>(AddStudentToGroupContextButton);
+            DuplicateStudentContextButtonClick = new CommandWithParameter<object>(DuplicateStudentContextButton);
+            CopyCellContextButtonClick = new CommandWithParameter<object>(CopyCellContextButton);
+            PasteCellContextButtonClick = new CommandWithParameter<object>(PasteCellContextButton);
+            CopyRowContextButtonClick = new CommandWithParameter<object>(CopyRowContextButton);
+            PasteRowContextButtonClick = new CommandWithParameter<object>(PasteRowContextButton);
 
             FirstName = "";
             LastName = "";
@@ -239,28 +290,6 @@ namespace University_System.ViewModel
             IsDataLoaded = false;
             IsSaveEnable = true;
         }
-
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public int Age { get; set; }
-        public string Gender { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
-        public DateTime BornDateTime { get; set; }
-        public int GroupId { get; set; }
-
-        public ICommand AddButtonClick { get; }
-        public ICommand LoadButtonClick { get; }
-        public ICommand RemoveStudentButtonClick { get; }
-        public ICommand SaveButtonClickAddNewStudentWindow { get; set; }
-        public ICommand EditButtonClick { get; set; }
-        public ICommand CancelButtonClick { get; set; }
-        public ICommand SaveButtonClick { get; set; }
-        public ICommand RemoveGroupButtonClick { get; }
-        public ICommand AddStudentToGroupButtonClick { get; }
-        public ICommand DuplicateStudentButtonClick { get; }
 
         private void AddButton()
         {
@@ -350,14 +379,10 @@ namespace University_System.ViewModel
             IsDataLoaded = true;
         }
 
-        private async void RemoveStudentButton(object parameter)
+        private async void RemoveStudentContextButton(object parameter)
         {
             // Getting selected student.
-            if (parameter is MenuItem menuItem 
-                && menuItem.Parent is ContextMenu contextMenu
-                && contextMenu.PlacementTarget is DataGrid dataGrid
-                && dataGrid.SelectedItem != null
-                && dataGrid.SelectedItem is Student selectedStudent)
+            if (parameter is Student selectedStudent)
             {
                 var result = MessageBox.Show("Are you sure that you would like to remove this student?",
                     "Remove student!",
@@ -376,20 +401,16 @@ namespace University_System.ViewModel
                             db.Students.Remove(student);
                             await db.SaveChangesAsync();
                             SelectedGroupChanged();
-                            LoadButton();
                         }
                     }
                 }     
             }
         }
 
-        private async void RemoveGroupButton(object parameter)
+        private async void RemoveGroupContextButton(object parameter)
         {
             // Getting selected group.
-            if (parameter is MenuItem menuItem
-                && menuItem.Parent is ContextMenu contextMenu
-                && contextMenu.PlacementTarget is DataGrid dataGrid
-                && dataGrid.SelectedItem is AdministrativeInformation selectedAdministrativeInformation)
+            if (parameter is AdministrativeInformation selectedAdministrativeInformation)
             {
                 var result = MessageBox.Show("Are you sure that you would like to remove this group?",
                     "Remove group!",
@@ -415,13 +436,9 @@ namespace University_System.ViewModel
             }
         }
 
-        private void AddStudentToGroupButton(object parameter)
+        private void AddStudentToGroupContextButton(object parameter)
         {
-
-            if (parameter is MenuItem menuItem
-                && menuItem.Parent is ContextMenu contextMenu
-                && contextMenu.PlacementTarget is DataGrid dataGrid
-                && dataGrid.SelectedItem is AdministrativeInformation selectedAdministrativeInformation)
+            if (parameter is Student selectedStudent)
             {
                 // Set initial data.
                 FirstName = "";
@@ -432,7 +449,7 @@ namespace University_System.ViewModel
                 PhoneNumber = "+380";
                 Address = "";
                 BornDateTime = DateTime.Now;
-                GroupId = selectedAdministrativeInformation.GroupId;
+                GroupId = selectedStudent.GroupId;
 
                 // Invoke 'add student' logic.
                 AddButton();
@@ -440,13 +457,10 @@ namespace University_System.ViewModel
             }
         }
 
-        private void DuplicateStudentButton(object parameter)
+        private void DuplicateStudentContextButton(object parameter)
         {
             // Getting selected student.
-            if (parameter is MenuItem menuItem
-                && menuItem.Parent is ContextMenu contextMenu
-                && contextMenu.PlacementTarget is DataGrid dataGrid
-                && dataGrid.SelectedItem is Student selectedStudent)
+            if (parameter is Student selectedStudent)
             {
                 var window = new AddNewStudentWindow(this);
                 // Copy student information.
@@ -484,6 +498,88 @@ namespace University_System.ViewModel
                         SelectedGroupChanged();
                     }
                 }              
+            }
+        }
+
+        private void CopyCellContextButton(object parameter)
+        {
+            if (parameter is DataGrid dataGrid)
+            {
+                // Save cell.
+                CopiedDataGridCell = dataGrid.CurrentCell;
+
+                // Save value to ctrl + c buffer.
+                Clipboard.SetData(DataFormats.Text, (CopiedDataGridCell.Item as Student).GetType().GetProperty(CopiedDataGridCell.Column.Header.ToString())
+                    .GetValue((CopiedDataGridCell.Item as Student)));
+            }
+        }
+
+        private void PasteCellContextButton(object parameter)
+        {
+            if (parameter is DataGrid dataGrid)
+            {
+                var currentCell = dataGrid.CurrentCell;
+
+                // Check headers.
+                if (CopiedDataGridCell.Column.Header.ToString() == currentCell.Column.Header.ToString())
+                {
+                    if (currentCell.Item is Student currentStudent)
+                    {
+                        // Find current student.
+                        var student = Students.FirstOrDefault(x => x.Id == currentStudent.Id);
+
+                        // Change value in current student if exist.
+                        if (student != null)
+                        {
+                            student.GetType().GetProperty(CopiedDataGridCell.Column.Header.ToString())
+                                .SetValue(student, (CopiedDataGridCell.Item as Student).GetType().GetProperty(CopiedDataGridCell.Column.Header.ToString())
+                                    .GetValue((CopiedDataGridCell.Item as Student)));
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Wrong column! You can paste it only in '" + CopiedDataGridCell.Column.Header.ToString() + "' column!"
+                                    , "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void CopyRowContextButton(object parameter)
+        {
+            if (parameter is Student student)
+            {
+                CopiedDataGridRow = student;
+
+                string info = "First name: " + student.FirstName + "\n Last name: " + student.LastName + "\n Age: " 
+                              + student.Age + "\n Gender: " + student.Gender + "\n Email: " + student.Email 
+                              + "\n Phone number: " + student.PhoneNumber + "\n Address: " + student.Address 
+                              + "\n Born: " + student.BornDateTime.ToShortDateString();
+                Clipboard.SetData(DataFormats.Text, info);
+            }
+        }
+
+        private void PasteRowContextButton(object parameter)
+        {
+            if (parameter is DataGrid dataGrid)
+            {
+                var currentRow = dataGrid.SelectedItem as Student;
+
+                if (currentRow != null)
+                {
+                    var student = Students.FirstOrDefault(x => x.Id == currentRow.Id);
+                    if (student != null)
+                    {
+                        student.FirstName = CopiedDataGridRow.FirstName;
+                        student.LastName = CopiedDataGridRow.LastName;
+                        student.Age = CopiedDataGridRow.Age;
+                        student.Gender = CopiedDataGridRow.Gender;
+                        student.Email = CopiedDataGridRow.Email;
+                        student.PhoneNumber = CopiedDataGridRow.PhoneNumber;
+                        student.Address = CopiedDataGridRow.Address;
+                        student.BornDateTime = CopiedDataGridRow.BornDateTime;
+                    }
+                }
             }
         }
 
