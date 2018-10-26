@@ -15,7 +15,7 @@ namespace University_System.Converters
         {
             if (value == null)
                 return false;
-            return (string)value == "";
+            return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

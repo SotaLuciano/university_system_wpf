@@ -230,10 +230,10 @@ namespace University_System
                     // Turn off datePicker.
                     studentViewModel.IsDatePickerEnable = false;
                     studentViewModel.IsDatePickerEnableText = "Enable";
-                    studentViewModel.FromDateFilter = new DateTime();
-                    studentViewModel.ToDateFilter = new DateTime();
                     studentViewModel.IsToDateFilterEnable = false;
                     studentViewModel.IsFromDateFilterEnable = false;
+                    studentViewModel.FromDateFilter = new DateTime();
+                    studentViewModel.ToDateFilter = new DateTime();
                 }
                 else
                 {
@@ -251,28 +251,79 @@ namespace University_System
                 && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
             {
                 // Add group to datagrid if it is selected.
-                var checkedAdministrativeInformations = studentViewModel.CurrentAdministrativeInformations.FirstOrDefault(x =>
+                var checkedAdministrativeInformations = studentViewModel.CurrentAdministrativeInformationsInComboBox.FirstOrDefault(x =>
                     x.GroupId == selectedAdministrativeInformation.GroupId);
-                if (checkedAdministrativeInformations == null)
+                // Need to check if there is already this group in grid.
+                var alreadyInList = studentViewModel.CurrentAdministrativeInformationsInDataGrid.FirstOrDefault(x =>
+                    x.GroupId == selectedAdministrativeInformation.GroupId);
+
+                if (checkedAdministrativeInformations != null)
                 {
-                    studentViewModel.CurrentAdministrativeInformations.Add(selectedAdministrativeInformation);
+                    if (checkBox.IsChecked == true && alreadyInList == null)
+                    {
+                        // Add group to grid.
+                        studentViewModel.CurrentAdministrativeInformationsInDataGrid.Add(selectedAdministrativeInformation);
+                        studentViewModel.SelectedGroupsNames += selectedAdministrativeInformation.GroupName + " ";
+                        selectedAdministrativeInformation.IsSelected = true;
+                        // Add stackpanel with groupname and button 'remove'.
+                        AddNewGroupToStackPanel(selectedAdministrativeInformation.GroupId, selectedAdministrativeInformation.GroupName);
+                    }
+                    else if (checkBox.IsChecked == false)
+                    {
+                        // Remove group.
+                        studentViewModel.CurrentAdministrativeInformationsInDataGrid.Remove(selectedAdministrativeInformation);
+                        studentViewModel.SelectedGroupsNames = studentViewModel.SelectedGroupsNames.Replace(selectedAdministrativeInformation.GroupName + " ", "");
+                        selectedAdministrativeInformation.IsSelected = false;
+
+                        RemoveGroupFromStackPanel(selectedAdministrativeInformation.GroupId);
+                    }
                 }
             }
         }
 
-        private void CheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+        private void AddNewGroupToStackPanel(int groupId, string groupName)
         {
-            if (sender is CheckBox checkBox
-                && DataContext is StudentViewModel studentViewModel
-                && checkBox.DataContext is AdministrativeInformation selectedAdministrativeInformation)
+            // Create new item.
+            var stackPanel = new StackPanel
             {
-                // Remove group from datagrid if it is deselected.
-                var  checkedAdministrativeInformations = studentViewModel.CurrentAdministrativeInformations.FirstOrDefault(x =>
-                    x.GroupId == selectedAdministrativeInformation.GroupId);
-                if (checkedAdministrativeInformations != null)
-                {
-                    studentViewModel.CurrentAdministrativeInformations.Remove(selectedAdministrativeInformation);
-                }
+                Orientation = Orientation.Horizontal,
+                Name = "ID" + groupId.ToString()
+            };
+            var label = new Label
+            {
+                Content = groupName
+            };
+            var button = new Button
+            {
+                Content = "X",
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brushes.Red
+            };
+            button.Click += removeGroupButtonClick;
+            stackPanel.Children.Add(label);
+            stackPanel.Children.Add(button);
+            // Add new item to the layout.
+            selectedGroupsStackPanel.Children.Add(stackPanel);
+        }
+
+        private void RemoveGroupFromStackPanel(int groupId)
+        {
+            // Find stackpanel with groupname and 'remove' button to remove it;
+            var result = LogicalTreeHelper.FindLogicalNode(selectedGroupsStackPanel, "ID" + groupId.ToString());
+            if(result != null && result is UIElement stackPanel)
+                selectedGroupsStackPanel.Children.Remove(stackPanel);
+        }
+
+        private void removeGroupButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button 
+                && button.Parent is StackPanel stackPanel 
+                && DataContext is StudentViewModel studentViewModel)
+            {
+                // Deselect group.
+                var removedItem = studentViewModel.AllAdministrativeInformations.FirstOrDefault(x =>
+                    x.GroupId.ToString() == stackPanel.Name.Replace("ID", ""));
+                removedItem.IsSelected = false;
             }
         }
 
@@ -311,46 +362,20 @@ namespace University_System
                 }
             }
         }
-
-        private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
+        private void TxtBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            myComboBox.IsDropDownOpen = true;
+            
         }
 
-        private void MyComboBox_OnMouseUp(object sender, MouseButtonEventArgs e)
+        private void TxtBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            myComboBox.IsDropDownOpen = true;
+            ToggleDrop.IsChecked = false;
+            ToggleDrop.IsChecked = true;
         }
 
-        private void MyComboBox_OnDropDownClosed(object sender, EventArgs e)
+        private void TxtBox_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var content = sender as ComboBox;
-            var test = VisualTreeHelper.GetChild(content, 0);
-            if (test is Grid dGrid && dGrid.Children[0] is Popup popup)
-                popup.Focus();
-        }
-
-        private void EventSetterSelected_OnHandler(object sender, RoutedEventArgs e)
-        {
-            //if (sender is ComboBoxItem comboBoxItem)
-            //{
-            //    // Get checkbox.
-            //    var children = VisualTreeHelper.GetChild(comboBoxItem, 0);
-            //    if (children != null
-            //        && children is Grid grid
-            //        && grid.Children[0] is CheckBox checkBox)
-            //    {
-            //        if (checkBox.IsChecked == false)
-            //        {
-            //            checkBox.IsChecked = true;
-            //        }
-            //        else
-            //        {
-            //            checkBox.IsChecked = false;
-            //        }
-
-            //    }
-            //}
+            ToggleDrop.IsChecked = true;
         }
     }
 }

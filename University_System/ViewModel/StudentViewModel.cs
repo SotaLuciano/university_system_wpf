@@ -75,8 +75,9 @@ namespace University_System.ViewModel
         public ObservableCollection<AdministrativeInformation> AllAdministrativeInformations { get; set; }
 
         // ItemSource for group data grid.
-        public ObservableCollection<AdministrativeInformation> CurrentAdministrativeInformations { get; set; }
-        
+        public ObservableCollection<AdministrativeInformation> CurrentAdministrativeInformationsInDataGrid { get; set; }
+        public ObservableCollection<AdministrativeInformation> CurrentAdministrativeInformationsInComboBox { get; set; }
+
         // Selected row in left(groups) grid.
         private AdministrativeInformation _selectedRowAdministrativeInformation;
         public AdministrativeInformation SelectedRowAdministrativeInformation
@@ -189,6 +190,18 @@ namespace University_System.ViewModel
             }
         }
 
+        private string _groupNameFilter;
+        public string GroupNameFilter
+        {
+            get => _groupNameFilter;
+            set
+            {
+                _groupNameFilter = value;
+                OnPropertyChanged();
+                UseComboboxGroupFilter();
+            }
+        }
+
         // Text on the button - 'Enable' - 'Disable'.
         private string _isDatePickerEnableText;
         public string IsDatePickerEnableText
@@ -219,6 +232,17 @@ namespace University_System.ViewModel
             set
             {
                 _copiedDataGridRow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _selectedGroupsNames;
+        public string SelectedGroupsNames
+        {
+            get => _selectedGroupsNames;
+            set
+            {
+                _selectedGroupsNames = value;
                 OnPropertyChanged();
             }
         }
@@ -254,7 +278,8 @@ namespace University_System.ViewModel
 
             Students = new ObservableCollection<Student>();
             AllAdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
-            CurrentAdministrativeInformations = new ObservableCollection<AdministrativeInformation>();
+            CurrentAdministrativeInformationsInDataGrid = new ObservableCollection<AdministrativeInformation>();
+            CurrentAdministrativeInformationsInComboBox = new ObservableCollection<AdministrativeInformation>();
 
             AddButtonClick = new MyCommand(AddButton);
             LoadButtonClick = new MyCommand(LoadButton);
@@ -286,6 +311,7 @@ namespace University_System.ViewModel
             IsDatePickerEnable = false;
             IsFromDateFilterEnable = false;
             IsToDateFilterEnable = false;
+            GroupNameFilter = "";
 
             IsDataLoaded = false;
             IsSaveEnable = true;
@@ -338,7 +364,8 @@ namespace University_System.ViewModel
         private void LoadButton()
         {
             AllAdministrativeInformations.Clear();
-            CurrentAdministrativeInformations.Clear();
+            CurrentAdministrativeInformationsInComboBox.Clear();
+            CurrentAdministrativeInformationsInDataGrid.Clear();
             DataGridInformation = Students;
 
             using (var db = new StudentContext())
@@ -371,12 +398,15 @@ namespace University_System.ViewModel
                         DepartmentId = info.DepartmentId,
                         DepartmentName = info.DepartmentName,
                         InstituteId = info.InstituteId,
-                        InstituteName = info.InstituteName
+                        InstituteName = info.InstituteName,
+                        IsSelected =  false
                     });
                 }
             }
             // Set combobox enable.
             IsDataLoaded = true;
+            // Clear group filter.
+            GroupNameFilter = "";
         }
 
         private async void RemoveStudentContextButton(object parameter)
@@ -650,7 +680,7 @@ namespace University_System.ViewModel
                 db.Groups.Load();
 
                 // Change group name in db.
-                foreach (var admInfo in CurrentAdministrativeInformations)
+                foreach (var admInfo in CurrentAdministrativeInformationsInDataGrid)
                 {
                     var group = db.Groups.FirstOrDefault(x => x.Id == admInfo.GroupId);
                     // If there is difference between names -> change db.
@@ -763,6 +793,26 @@ namespace University_System.ViewModel
             }
 
             return toDateFilterResult;
+        }
+
+        private void UseComboboxGroupFilter()
+        {
+            CurrentAdministrativeInformationsInComboBox.Clear();
+            if (String.IsNullOrEmpty(GroupNameFilter))
+            {
+                foreach (var tmpAdministrativeInformation in AllAdministrativeInformations)
+                {
+                    CurrentAdministrativeInformationsInComboBox.Add(tmpAdministrativeInformation);
+                }
+                return;
+            }
+            foreach (var tmp in AllAdministrativeInformations)
+            {
+                if((tmp.GroupName).ToLower().Contains(GroupNameFilter.ToLower()))
+                {
+                    CurrentAdministrativeInformationsInComboBox.Add(tmp);
+                }
+            }
         }
 
         // Data Validation.

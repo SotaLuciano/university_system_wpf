@@ -10,6 +10,16 @@ namespace University_System.Models
 {
     public class AdministrativeInformation : INotifyPropertyChanged
     {
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
         private int _groupId;
         public int GroupId
         {
