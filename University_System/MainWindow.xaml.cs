@@ -297,7 +297,9 @@ namespace University_System
             {
                 Content = "X",
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = Brushes.Red
+                Foreground = Brushes.Red,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent
             };
             button.Click += removeGroupButtonClick;
             stackPanel.Children.Add(label);
